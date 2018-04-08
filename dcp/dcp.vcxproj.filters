@@ -30,12 +30,27 @@
     <ClInclude Include="..\common\inc\application.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\inc\concurrentqueue.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="dicom_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="operation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="precomp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dicom_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

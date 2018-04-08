@@ -153,11 +153,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\common\inc\application.h" />
+    <ClInclude Include="..\common\inc\concurrentqueue.h" />
     <ClInclude Include="..\common\inc\errors.h" />
+    <ClInclude Include="dicom_file.h" />
+    <ClInclude Include="file_helpers.h" />
+    <ClInclude Include="operation.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dicom_file.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
