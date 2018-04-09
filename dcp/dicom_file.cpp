@@ -8,7 +8,7 @@ template <unsigned TBytesRead>
 HRESULT Discard(std::istream& stream)
 {
     stream.ignore(TBytesRead);
-    RETURN_HR_IF(E_FAIL, stream.good());
+    RETURN_HR_IF_FALSE(E_FAIL, stream.good());
     return S_OK;
 }
 
@@ -18,13 +18,14 @@ HRESULT Read(std::istream& stream, _Out_ T* group)
 {
 	RETURN_HR_IF_NULL(E_FAIL, group);
     stream.read(reinterpret_cast<char*>(group), sizeof(T));
-    RETURN_HR_IF(E_FAIL, stream.good());
+    RETURN_HR_IF_FALSE(E_FAIL, stream.good());
     return S_OK;
 }
 
 DicomFile::DicomFile(
     const std::wstring& fileName,
     const std::vector<DicomTag>& tags) :
+        m_fileName(fileName),
         m_stream(fileName, std::ifstream::binary),
 		m_tags(tags)
 {
@@ -133,7 +134,11 @@ HRESULT DicomFile::Load()
 		}
 
         std::vector<char> buffer(ValueLength);
-		m_stream.read(&buffer[0], ValueLength);
+
+        if (ValueLength != 0)
+        {
+            m_stream.read(&buffer[0], ValueLength);
+        }
 
 		bool isMapped;
 		unsigned id;

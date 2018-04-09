@@ -16,7 +16,7 @@ class ConcurrentQueue
     std::mutex m_mutex;
     std::condition_variable m_empty;
     std::condition_variable m_full;
-
+    bool m_isFinalized = false;
 private:
 
     unsigned NextRead()
@@ -47,7 +47,9 @@ public:
 
     HRESULT Enqueue(T&& obj)
     {
-        std::unique_lock<mutex> lock(m_mutex);
+        FAIL_FAST_IF_TRUE(m_isFinalized);
+
+        std::unique_lock<std::mutex> lock(m_mutex);
         m_full.wait(lock, [&](){ return m_readPos != NextWrite(); });
 
         m_queue[m_writePos] = std::move(obj);
@@ -62,10 +64,10 @@ public:
     HRESULT Dequeue(T* pObj)
     {
         RETURN_HR_IF_NULL(E_POINTER, pObj);
-        std::unique_lock<mutex> lock(m_mutex);
-        m_empty.wait(lock, [&](){ return m_readPos != m_writePos; });
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_empty.wait(lock, [&](){ return m_readPos != m_writePos || m_isFinalized; });
 
-        *pObj = std::move(m_queue.at(m_write));
+        *pObj = std::move(m_queue.at(m_readPos));
 
         IncrementRead();
 
@@ -77,6 +79,21 @@ public:
     bool IsEmpty() const
     {
         return m_readPos == m_writePos;
+    }
+
+    HRESULT Finish()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_isFinalized = true;
+        m_empty.notify_all();
+        return S_OK;
+    }
+
+    HRESULT IsDefunct(bool* pIsDefunct)
+    {
+        RETURN_HR_IF_NULL(E_POINTER, pIsDefunct);
+        *pIsDefunct = (m_isFinalized == true) && IsEmpty();
+        return S_OK;
     }
 };
 

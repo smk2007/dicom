@@ -29,13 +29,11 @@ inline HRESULT GetChildren(
         if (type == FileType::Directory &&
             (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
         {
-            wprintf(L"%ls \n", path.c_str());
             children->push_back(std::move(path));
         }
         else if (type == FileType::File &&
                 (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) == 0)
         {
-            wprintf(L"%ls \n", path.c_str());
             children->push_back(std::move(path));
         }
     }

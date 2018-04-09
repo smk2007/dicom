@@ -63,17 +63,46 @@ namespace Tags
             return S_OK;
         }
 
+        HRESULT GetFilename(const wchar_t** ppfileName)
+        {
+            RETURN_HR_IF_NULL(E_POINTER, ppfileName);
+            *ppfileName = m_fileName.c_str();
+            return S_OK;
+        }
+
 	private:
 		HRESULT Load();
 
 		HRESULT IsMappedTag(const DicomTag& tag, _Out_ bool* isMapped);
 		HRESULT TagToId(const DicomTag& tag, _Out_ unsigned* id);
 
+        std::wstring m_fileName;
 		std::ifstream m_stream;
 		std::vector<DicomTag> m_tags;
 
 		std::map<unsigned, std::vector<char>> m_Attributes;
 	};
+
+    static HRESULT MakeDicomMetadataFile(const std::wstring& path, std::shared_ptr<DicomFile>* pFile)
+    {
+        RETURN_HR_IF_NULL(E_POINTER, pFile);
+        static const std::vector<DicomTag> tags =
+        {
+            Tags::SamplesPerPixel,
+            Tags::BitsAllocated,
+            Tags::Rows,
+            Tags::Columns,
+            Tags::SliceThickness,
+            Tags::WindowWidth,
+            Tags::WindowCenter,
+            Tags::PixelSpacing,
+            Tags::ImagePositionPatient,
+            Tags::ImageOrientationPatient,
+            Tags::PatientPosition
+        };
+        *pFile = std::make_shared<DicomFile>(path, tags);
+        return S_OK;
+    }
 
     static HRESULT MakeDicomImageFile(const std::wstring& path, std::shared_ptr<DicomFile>* pFile)
     {
