@@ -5,10 +5,6 @@
 
 #pragma once
 
-#include <istream>
-#include <fstream>
-
-
 namespace DCM
 {
 	struct DicomTag
@@ -54,6 +50,39 @@ namespace Tags
 			const std::vector<DicomTag>& tags);
 
 		HRESULT GetAttribute(const DicomTag& tag, std::vector<char>* data);
+        HRESULT GetAttribute(const DicomTag& tag, _Out_ std::wstring* out)
+        {
+            RETURN_HR_IF_NULL(E_FAIL, out);
+            std::vector<char> buffer;
+            RETURN_IF_FAILED(GetAttribute(tag, &buffer));
+
+            std::string bufferAsString(std::begin(buffer), std::end(buffer));
+            out->resize(bufferAsString.size());
+            std::copy(std::begin(bufferAsString), std::end(bufferAsString), std::begin(*out));
+            return S_OK;
+        }
+
+        template <typename T>
+        HRESULT GetAttribute(const DicomTag& tag, _Out_ T* out)
+        {
+            RETURN_HR_IF_NULL(E_FAIL, out);
+            std::vector<char> buffer;
+            RETURN_IF_FAILED(GetAttribute(tag, &buffer));
+
+            if (buffer.size() == 2)
+            {
+                *out = static_cast<T>(*reinterpret_cast<unsigned short*>(&buffer[0]));
+                return S_OK;
+            }
+            else if (buffer.size() == 4)
+            {
+                *out = static_cast<T>(*reinterpret_cast<unsigned long*>(&buffer[0]));
+                return S_OK;
+            }
+            return E_FAIL;
+        }
+
+        HRESULT GetAttributeReference(const DicomTag& tag, std::vector<char>** data);
 
         template <typename TOut>
         HRESULT GetAttributeAs(std::vector<char> buffer, _Out_ TOut* out)
@@ -83,7 +112,7 @@ namespace Tags
 		std::map<unsigned, std::vector<char>> m_Attributes;
 	};
 
-    static HRESULT MakeDicomMetadataFile(const std::wstring& path, std::shared_ptr<DicomFile>* pFile)
+    inline HRESULT MakeDicomMetadataFile(const std::wstring& path, std::shared_ptr<DicomFile>* pFile)
     {
         RETURN_HR_IF_NULL(E_POINTER, pFile);
         static const std::vector<DicomTag> tags =
@@ -104,7 +133,7 @@ namespace Tags
         return S_OK;
     }
 
-    static HRESULT MakeDicomImageFile(const std::wstring& path, std::shared_ptr<DicomFile>* pFile)
+    inline HRESULT MakeDicomImageFile(const std::wstring& path, std::shared_ptr<DicomFile>* pFile)
     {
         RETURN_HR_IF_NULL(E_POINTER, pFile);
         static const std::vector<DicomTag> tags =

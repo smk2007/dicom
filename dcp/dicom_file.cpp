@@ -49,7 +49,19 @@ HRESULT DicomFile::GetAttribute(const DicomTag& tag, std::vector<char>* data)
     auto foundIt = m_Attributes.find(id);
     RETURN_HR_IF(E_FAIL, foundIt == std::end(m_Attributes));
     *data = m_Attributes[id];
-    return E_FAIL;
+    return S_OK;
+}
+
+_Use_decl_annotations_
+HRESULT DicomFile::GetAttributeReference(const DicomTag& tag, std::vector<char>** data)
+{
+    RETURN_HR_IF_NULL(E_POINTER, data);
+    unsigned id;
+    RETURN_IF_FAILED(TagToId(tag, &id));
+    auto foundIt = m_Attributes.find(id);
+    RETURN_HR_IF(E_FAIL, foundIt == std::end(m_Attributes));
+    *data = &m_Attributes[id];
+    return S_OK;
 }
 
 _Use_decl_annotations_

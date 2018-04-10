@@ -42,6 +42,12 @@
     <ClInclude Include="file_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dicom_image_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\inc\device_resources.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="precomp.cpp">
@@ -53,5 +59,10 @@
     <ClCompile Include="dicom_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="voxelize_means.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
