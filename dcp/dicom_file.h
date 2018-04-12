@@ -38,6 +38,8 @@ namespace Tags
     __declspec(selectany) DicomTag ImagePositionPatient = { 0x0020, 0x0032 };
     __declspec(selectany) DicomTag ImageOrientationPatient = { 0x0020, 0x0037 };
     __declspec(selectany) DicomTag PatientPosition = { 0x0018, 0x5100 };
+    __declspec(selectany) DicomTag NumberOfSeriesRelatedInstances = { 0x0020, 0x1209 };
+    __declspec(selectany) DicomTag NumberOfStudyRelatedSeries = { 0x0020, 0x1206 };
 }
 	/// <summary>
 	/// Provides application-specific behavior to supplement the default Application class.
@@ -92,11 +94,9 @@ namespace Tags
             return S_OK;
         }
 
-        HRESULT GetFilename(const wchar_t** ppfileName)
+        const std::wstring& SafeGetFilename()
         {
-            RETURN_HR_IF_NULL(E_POINTER, ppfileName);
-            *ppfileName = m_fileName.c_str();
-            return S_OK;
+            return m_fileName;
         }
 
 	private:
@@ -127,7 +127,9 @@ namespace Tags
             Tags::PixelSpacing,
             Tags::ImagePositionPatient,
             Tags::ImageOrientationPatient,
-            Tags::PatientPosition
+            Tags::PatientPosition,
+            Tags::NumberOfSeriesRelatedInstances,
+            Tags::NumberOfStudyRelatedSeries
         };
         *pFile = std::make_shared<DicomFile>(path, tags);
         return S_OK;
@@ -149,7 +151,9 @@ namespace Tags
             Tags::PixelSpacing,
             Tags::ImagePositionPatient,
             Tags::ImageOrientationPatient,
-            Tags::PatientPosition
+            Tags::PatientPosition,
+            Tags::NumberOfSeriesRelatedInstances,
+            Tags::NumberOfStudyRelatedSeries
         };
         *pFile = std::make_shared<DicomFile>(path, tags);
         return S_OK;

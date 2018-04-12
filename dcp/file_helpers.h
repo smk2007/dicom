@@ -161,4 +161,79 @@ inline HRESULT SortFilesInScene(std::vector<std::shared_ptr<DicomFile>>* outFile
     return S_OK;
 }
 
+template <typename... TArgs>
+HRESULT Log(const wchar_t* pMessage, TArgs&&... arguments)
+{
+    RETURN_HR_IF_NULL(E_INVALIDARG, pMessage);
+    wprintf(pMessage, arguments...);
+    wprintf(L"\n");
+    return S_OK;
+}
+
+inline HRESULT SaveToFile(
+    Application::Infrastructure::DeviceResources& resources,
+    ID3D11Buffer* pBuffer,
+    unsigned width,
+    unsigned height,
+    unsigned bytesPerPixel,
+    WICPixelFormatGUID& format,
+    const wchar_t* pFileName)
+{
+    RETURN_HR_IF_NULL(E_INVALIDARG, pBuffer);
+    RETURN_HR_IF_NULL(E_INVALIDARG, pFileName);
+
+    // Copy resource
+    Microsoft::WRL::ComPtr<ID3D11Buffer> spCopy;
+    RETURN_IF_FAILED(resources.GetBufferOnCPU(pBuffer, &spCopy));
+
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    RETURN_IF_FAILED(resources.Map(spCopy.Get(), &mappedResource));
+
+    // Set a break point here and put down the expression "p, 1024" in your watch window to see what has been written out by our CS
+    // This is also a common trick to debug CS programs.
+    Microsoft::WRL::ComPtr<IWICBitmap> spBitmap;
+    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateBitmapFromMemory(
+        width,
+        height,
+        format,
+        bytesPerPixel * width,
+        bytesPerPixel * width * height,
+        reinterpret_cast<BYTE*>(mappedResource.pData),
+        &spBitmap));
+
+    Microsoft::WRL::ComPtr<IWICBitmapEncoder> spEncoder;
+    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateEncoder(GUID_ContainerFormatPng, nullptr, &spEncoder));
+
+    Microsoft::WRL::ComPtr<IWICStream> spStream;
+
+    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateStream(&spStream));
+
+    RETURN_IF_FAILED(spStream->InitializeFromFilename(pFileName, GENERIC_WRITE));
+    RETURN_IF_FAILED(spEncoder->Initialize(spStream.Get(), WICBitmapEncoderNoCache));
+
+    Microsoft::WRL::ComPtr<IWICMetadataBlockWriter> spBlockWriter;
+
+    // Frame variables
+    Microsoft::WRL::ComPtr<IWICBitmapFrameEncode> spFrameEncode;
+
+    // Get and create image frame
+    RETURN_IF_FAILED(spEncoder->CreateNewFrame(&spFrameEncode, nullptr));
+
+    //Initialize the encoder
+    RETURN_IF_FAILED(spFrameEncode->Initialize(nullptr));
+    RETURN_IF_FAILED(spFrameEncode->SetSize(width, height));
+    RETURN_IF_FAILED(spFrameEncode->SetPixelFormat(&format));
+
+    // Copy updated bitmap to output
+    RETURN_IF_FAILED(spFrameEncode->WriteSource(spBitmap.Get(), nullptr));
+
+    //Commit the frame
+    RETURN_IF_FAILED(spFrameEncode->Commit());
+    RETURN_IF_FAILED(spEncoder->Commit());
+
+    RETURN_IF_FAILED(resources.Unmap(spCopy.Get()));
+
+    return S_OK;
+}
+
 }

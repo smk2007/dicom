@@ -58,13 +58,14 @@ template <> struct Property<ImageProperty::Spacings>
         std::wstring pixelSpacing;
         FAIL_FAST_IF_FAILED(file->GetAttribute(DCM::Tags::PixelSpacing, &pixelSpacing));
         auto spacings = GetAsFloatVector(pixelSpacing);
-        spacings[0] = static_cast<T>(spacings[0]);
-        spacings[1] = static_cast<T>(spacings[1]);
+        std::vector<T> outSpacings(3);
+        outSpacings[0] = static_cast<T>(spacings[0]);
+        outSpacings[1] = static_cast<T>(spacings[1]);
 
         std::wstring sliceThickness;
         FAIL_FAST_IF_FAILED(file->GetAttribute(DCM::Tags::SliceThickness, &sliceThickness));
-        spacings[2] = static_cast<T>(ParseFloat(sliceThickness));
-        return spacings;
+        outSpacings[2] = static_cast<T>(ParseFloat(sliceThickness));
+        return outSpacings;
     }
 };
 

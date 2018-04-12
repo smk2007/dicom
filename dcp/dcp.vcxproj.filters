@@ -16,6 +16,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{60876544-ea67-42f9-8850-3884dcbc73ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{8a845394-5ab0-4684-add1-e83a6c1d71bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -64,5 +67,10 @@
     <None Include="voxelize_means.inl">
       <Filter>Header Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Shaders\VoxelizeMeans.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

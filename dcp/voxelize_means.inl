@@ -3,12 +3,14 @@
 template <OperationType TType>
 struct VoxelizeOperation
 {
+private:
     unsigned m_xInMillimeters;
     unsigned m_yInMillimeters;
     unsigned m_zInMillimeters;
 
     std::wstring m_inputFolder;
 
+public:
     VoxelizeOperation(
         const std::wstring& inputFolder,
         unsigned xInMillimeters,
@@ -22,81 +24,163 @@ struct VoxelizeOperation
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
     {
-        Concurrency::ConcurrentQueue<std::shared_ptr<DicomFile>> dataFiles(100);
+        // Create the shader
+        Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
+        RETURN_IF_FAILED(resources.CreateComputeShader(L"Shaders\\VoxelizeMeans.hlsl", "CSMain", &spComputeShader));
 
-        std::thread t1(
-            [](auto inputFolder, auto files)
+        std::vector<std::shared_ptr<DicomFile>> metadataFiles;
+        RETURN_IF_FAILED(GetMetadataFiles(m_inputFolder, &metadataFiles));
+        RETURN_IF_FAILED(SortFilesInScene(&metadataFiles));
+        auto nFiles = static_cast<unsigned>(metadataFiles.size());
+
+        Concurrency::ConcurrentQueue<std::shared_ptr<DicomFile>> fileQueue(100);
+
+        std::thread t1([](auto metadataFiles, auto fileQueue)
+        {
+            [&]()->HRESULT
             {
-                [&]()->HRESULT
+                for (auto file : metadataFiles.get())
                 {
-                    std::vector<std::shared_ptr<DicomFile>> metadataFiles;
-                    RETURN_IF_FAILED(GetMetadataFiles(inputFolder, &metadataFiles));
-                    RETURN_IF_FAILED(SortFilesInScene(&metadataFiles));
+                     // Get the full file
+                    std::shared_ptr<DicomFile> fullFile;
+                    FAIL_FAST_IF_FAILED(MakeDicomImageFile(file->SafeGetFilename(), &fullFile));
+                    RETURN_IF_FAILED(fileQueue.get().Enqueue(std::move(fullFile)));
+                }
 
-                    for (auto file : metadataFiles)
+                fileQueue.get().Finish();
+                return S_OK;
+            }();
+        }, std::ref(metadataFiles), std::ref(fileQueue));
+
+        std::thread t2([](
+            auto resources,
+            auto spComputeShader,
+            auto fileQueue,
+            auto nFiles,
+            auto voxelWidthInMillimeters,
+            auto voxelHeightInMillimeters,
+            auto voxelDepthInMillimeters)
+        {
+            [&]()->HRESULT
+            {
+                Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBuffer;
+                Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutUnorderedAccessView;
+                unsigned short voxelImageWidth = 0;
+                unsigned short voxelImageHeight = 0;
+                unsigned short voxelImageDepth = 0;
+                unsigned slice = 0;
+
+                bool isDefunct;
+                while (SUCCEEDED(fileQueue.get().IsDefunct(&isDefunct)) && !isDefunct)
+                {
+                    std::shared_ptr<DicomFile> file;
+                    FAIL_FAST_IF_FAILED(fileQueue.get().Dequeue(&file));
+
+                    if (!spOutBuffer || !spOutUnorderedAccessView)
                     {
-                        const wchar_t* pName;
-                        file->GetFilename(&pName);
+                        FAIL_FAST_IF_FAILED(GetVoxelDimensions(file, nFiles,
+                            voxelWidthInMillimeters, voxelHeightInMillimeters, voxelDepthInMillimeters, 
+                            &voxelImageWidth, &voxelImageHeight, &voxelImageDepth));
 
-                        // Get the full file
-                        std::shared_ptr<DicomFile> fullFile;
-                        FAIL_FAST_IF_FAILED(MakeDicomImageFile(std::wstring(pName), &fullFile));
-                        RETURN_IF_FAILED(files.get().Enqueue(std::move(fullFile)));
+                        Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageWidth, voxelImageHeight, voxelImageDepth);
+                        FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
+                            sizeof(float) /* size of item */,
+                            voxelImageWidth * voxelImageHeight * voxelImageDepth /* num items */,
+                            nullptr/* data */,
+                            &spOutBuffer));
+
+                        FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBufferUAV(spOutBuffer.Get(), &spOutUnorderedAccessView));
+                        Log(L"Created resources for output buffer.");
                     }
 
-                    files.get().Finish();
-                    return S_OK;
-                }();
-            }, m_inputFolder, std::ref(dataFiles));
+                    Log(L"Processing: %ls", file->SafeGetFilename().c_str());
+                    Log(L"Creating constant resources.");
 
-        std::thread t2(
-            [](auto resources, auto dicomFiles)
-            {
-                [&]()->HRESULT
-                {
-                    bool isDefunct;
-                    unsigned i = 0;
-                    while (SUCCEEDED(dicomFiles.get().IsDefunct(&isDefunct)) && !isDefunct)
+                    struct {
+                        float ZPosition;
+                        unsigned short Width;
+                        unsigned short Height;
+                        unsigned short Depth;
+                        float Unused;
+                    } constantData =
                     {
-                        std::shared_ptr<DicomFile> file;
-                        RETURN_IF_FAILED(dicomFiles.get().Dequeue(&file));
-                        const wchar_t* pName;
-                        file->GetFilename(&pName);
-                        wprintf(L"Processing %d: %ls \n", i++, pName);
+                        Property<ImageProperty::Spacings>::SafeGet(file)[2] * slice++,
+                        voxelImageWidth,
+                        voxelImageHeight,
+                        voxelImageDepth
+                    };
 
-                        auto data = Property<ImageProperty::PixelData>::SafeGet(file);
+                    Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
+                    FAIL_FAST_IF_FAILED(resources.get().CreateConstantBuffer(constantData, &spConstantBuffer));
 
-                        auto a = Property<ImageProperty::Columns>::SafeGet<unsigned>(file);
-                            auto b = Property<ImageProperty::Rows>::SafeGet<unsigned>(file);
+                    Log(L"Created constant resources.");
 
-                            auto c = Property<ImageProperty::Pitch>::SafeGet<unsigned>(file);
-                            auto d = Property<ImageProperty::Length>::SafeGet<unsigned>(file);
+                    // Get data as structured buffer
+                    // Because structured buffers require a minumum size of 4 bytes per element,
+                    // 2 pixels are packed together.
+                    auto data = Property<ImageProperty::PixelData>::SafeGet(file);
+                    Microsoft::WRL::ComPtr<ID3D11Buffer> spBuffer;
+                    FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
+                        sizeof(short) * 2 /* size of item */,
+                        static_cast<unsigned>(data->size() / 4) /* num items */,
+                        &data->at(0) /* data */,
+                        &spBuffer));
 
+                    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spShaderResourceView;
+                    FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBufferSRV(spBuffer.Get(), &spShaderResourceView));
 
-                        Microsoft::WRL::ComPtr<IWICBitmap> spWicBitmap;
-                        auto hr = (resources.get().GetWicImagingFactory()->CreateBitmapFromMemory(
-                            Property<ImageProperty::Columns>::SafeGet<unsigned>(file),
-                            Property<ImageProperty::Rows>::SafeGet<unsigned>(file),
-                            GUID_WICPixelFormat16bppGray,
-                            Property<ImageProperty::Pitch>::SafeGet<unsigned>(file),
-                            Property<ImageProperty::Length>::SafeGet<unsigned>(file),
-                            reinterpret_cast<BYTE*>(&(data->at(0))),
-                            &spWicBitmap
-                        ));
+                    std::vector<ID3D11ShaderResourceView*> sharedResourceViews = { spShaderResourceView.Get() };
+                    resources.get().RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 1, &sharedResourceViews[0],
+                        spOutUnorderedAccessView.Get(), voxelImageWidth * voxelImageHeight * voxelImageDepth, 1, 1);
+                }
 
-                        unsigned w, h;
-                        spWicBitmap->GetSize(&w, &h);
+                WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
+                RETURN_IF_FAILED(
+                    SaveToFile(
+                        resources, 
+                        spOutBuffer.Get(),
+                        voxelImageWidth * voxelImageDepth,
+                        voxelImageHeight,
+                        sizeof(float),
+                        format,
+                        L"outfile.bmp"));
 
-                    }
-
-                    return S_OK;
-                }();
-            }, std::ref(resources), std::ref(dataFiles));
-
-
+                return S_OK;
+            }();
+        },
+        std::ref(resources), spComputeShader, std::ref(fileQueue), nFiles,
+        m_xInMillimeters, m_yInMillimeters, m_zInMillimeters);
 
         t1.join();
         t2.join();
+
+        return S_OK;
+    }
+
+    static HRESULT GetVoxelDimensions(
+        std::shared_ptr<DicomFile> spFile,
+        unsigned nFiles,
+        double voxelWidthInMillimeters,
+        double voxelHeightInMillimeters,
+        double voxelDepthInMillimeters,
+        unsigned short* voxelImageWidth,
+        unsigned short* voxelImageHeight,
+        unsigned short* voxelImageDepth)
+    {
+        RETURN_HR_IF_NULL(E_POINTER, voxelImageWidth);
+        RETURN_HR_IF_NULL(E_POINTER, voxelImageHeight);
+        RETURN_HR_IF_NULL(E_POINTER, voxelImageDepth);
+
+        // Initialize the out buffer on the first frame
+        auto spacings = Property<ImageProperty::Spacings>::SafeGet(spFile);
+        auto columns = Property<ImageProperty::Columns>::SafeGet(spFile);
+        auto rows = Property<ImageProperty::Rows>::SafeGet(spFile);
+        auto rawVoxelImageWidth = static_cast<unsigned short>(ceil(spacings[0] * columns / voxelWidthInMillimeters));
+
+        // Correct the width to be a multiple of 2
+        *voxelImageWidth = (static_cast<unsigned>(rawVoxelImageWidth) % 2 == 0) ? rawVoxelImageWidth : rawVoxelImageWidth + 1;
+        *voxelImageHeight = static_cast<unsigned short>(ceil(spacings[1] * rows / voxelHeightInMillimeters));
+        *voxelImageDepth = static_cast<unsigned short>(ceil(spacings[2] * nFiles / voxelDepthInMillimeters));
 
         return S_OK;
     }

@@ -27,6 +27,11 @@ enum OperationType
     SSIM
 };
 
+template <unsigned TType> void LogOperation() {}
+template <> void inline LogOperation<OperationType::VoxelizeMeans>() { Log(L"[OperationType::VoxelizeMeans]"); }
+template <> void inline LogOperation<OperationType::VoxelizeStdDev>() { Log(L"[OperationType::VoxelizeStdDev]"); }
+
+
 template <unsigned TType> struct Operation;
 template <> struct Operation<OperationType::AverageImages>
 {
