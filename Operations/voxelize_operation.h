@@ -1,6 +1,12 @@
 #pragma once
 
-template <OperationType TType>
+#include "voxel_types.h"
+
+namespace DCM
+{
+namespace Operations
+{
+
 struct VoxelizeOperation
 {
 private:
@@ -12,14 +18,15 @@ private:
 
 public:
     VoxelizeOperation(
+        VoxelizeMode,
         const std::wstring& inputFolder,
         unsigned xInMillimeters,
         unsigned yInMillimeters,
         unsigned zInMillimeters) :
-            m_inputFolder(inputFolder),
-            m_xInMillimeters(xInMillimeters),
-            m_yInMillimeters(yInMillimeters),
-            m_zInMillimeters(zInMillimeters)
+        m_inputFolder(inputFolder),
+        m_xInMillimeters(xInMillimeters),
+        m_yInMillimeters(yInMillimeters),
+        m_zInMillimeters(zInMillimeters)
     {}
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
@@ -41,7 +48,7 @@ public:
             {
                 for (auto file : metadataFiles.get())
                 {
-                     // Get the full file
+                    // Get the full file
                     std::shared_ptr<DicomFile> fullFile;
                     FAIL_FAST_IF_FAILED(MakeDicomImageFile(file->SafeGetFilename(), &fullFile));
                     RETURN_IF_FAILED(fileQueue.get().Enqueue(std::move(fullFile)));
@@ -79,7 +86,7 @@ public:
                     if (!spOutBuffer || !spOutUnorderedAccessView)
                     {
                         FAIL_FAST_IF_FAILED(GetVoxelDimensions(file, nFiles,
-                            voxelWidthInMillimeters, voxelHeightInMillimeters, voxelDepthInMillimeters, 
+                            voxelWidthInMillimeters, voxelHeightInMillimeters, voxelDepthInMillimeters,
                             &voxelImageWidth, &voxelImageHeight, &voxelImageDepth));
 
                         Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageWidth, voxelImageHeight, voxelImageDepth);
@@ -137,7 +144,7 @@ public:
                 WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
                 RETURN_IF_FAILED(
                     SaveToFile(
-                        resources, 
+                        resources,
                         spOutBuffer.Get(),
                         voxelImageWidth * voxelImageDepth,
                         voxelImageHeight,
@@ -148,8 +155,8 @@ public:
                 return S_OK;
             }();
         },
-        std::ref(resources), spComputeShader, std::ref(fileQueue), nFiles,
-        m_xInMillimeters, m_yInMillimeters, m_zInMillimeters);
+            std::ref(resources), spComputeShader, std::ref(fileQueue), nFiles,
+            m_xInMillimeters, m_yInMillimeters, m_zInMillimeters);
 
         t1.join();
         t2.join();
@@ -185,3 +192,6 @@ public:
         return S_OK;
     }
 };
+
+} // Operations
+} // DCM

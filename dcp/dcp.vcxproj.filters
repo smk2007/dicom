@@ -19,6 +19,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{8a845394-5ab0-4684-add1-e83a6c1d71bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Operations">
+      <UniqueIdentifier>{30a50753-f5fd-484c-acd9-0f5a584ff828}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -39,9 +42,6 @@
     <ClInclude Include="dicom_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="operation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="file_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -50,6 +50,21 @@
     </ClInclude>
     <ClInclude Include="..\common\inc\device_resources.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Operations\operation.h">
+      <Filter>Operations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Operations\average_images.inl">
+      <Filter>Operations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Operations\concatenate_images.inl">
+      <Filter>Operations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Operations\voxel_types.h">
+      <Filter>Operations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Operations\voxelize_operation.h">
+      <Filter>Operations</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -64,8 +79,26 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="voxelize_means.inl">
-      <Filter>Header Files</Filter>
+    <None Include="..\Operations\normalize.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\voxelize_means.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\image_to_csv.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\gfactor.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\signal_to_noise.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\ssim.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\voxelize_stddev.inl">
+      <Filter>Operations</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
