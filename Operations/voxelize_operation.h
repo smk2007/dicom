@@ -1,7 +1,5 @@
 #pragma once
 
-#include "voxel_types.h"
-
 namespace DCM
 {
 namespace Operations
@@ -15,14 +13,19 @@ private:
     unsigned m_zInMillimeters;
 
     std::wstring m_inputFolder;
+    std::wstring m_shaderPath;
+    std::string m_shaderMain;
 
 public:
     VoxelizeOperation(
-        VoxelizeMode,
+        const wchar_t* pShaderPath,
+        const char* pShaderMain,
         const std::wstring& inputFolder,
         unsigned xInMillimeters,
         unsigned yInMillimeters,
         unsigned zInMillimeters) :
+        m_shaderPath(pShaderPath),
+        m_shaderMain(pShaderMain),
         m_inputFolder(inputFolder),
         m_xInMillimeters(xInMillimeters),
         m_yInMillimeters(yInMillimeters),
@@ -33,7 +36,7 @@ public:
     {
         // Create the shader
         Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
-        RETURN_IF_FAILED(resources.CreateComputeShader(L"Shaders\\VoxelizeMeans.hlsl", "CSMain", &spComputeShader));
+        RETURN_IF_FAILED(resources.CreateComputeShader(m_shaderPath.c_str(), m_shaderMain.c_str(), &spComputeShader));
 
         std::vector<std::shared_ptr<DicomFile>> metadataFiles;
         RETURN_IF_FAILED(GetMetadataFiles(m_inputFolder, &metadataFiles));

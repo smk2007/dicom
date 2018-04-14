@@ -10,7 +10,7 @@ namespace Operations
 template <> struct Operation<OperationType::VoxelizeMeans> : public VoxelizeOperation
 {
     Operation(const std::wstring& inputFolder, unsigned xInMillimeters, unsigned yInMillimeters, unsigned zInMillimeters) :
-        VoxelizeOperation(VoxelizeMode::Mean, inputFolder, xInMillimeters, yInMillimeters, zInMillimeters)
+        VoxelizeOperation(L"Shaders\\voxelize_mean.hlsl", "CSMain", inputFolder, xInMillimeters, yInMillimeters, zInMillimeters)
     {}
 };
 

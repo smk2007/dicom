@@ -60,9 +60,6 @@
     <ClInclude Include="..\Operations\concatenate_images.inl">
       <Filter>Operations</Filter>
     </ClInclude>
-    <ClInclude Include="..\Operations\voxel_types.h">
-      <Filter>Operations</Filter>
-    </ClInclude>
     <ClInclude Include="..\Operations\voxelize_operation.h">
       <Filter>Operations</Filter>
     </ClInclude>
@@ -102,7 +99,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Shaders\VoxelizeMeans.hlsl">
+    <FxCompile Include="..\Shaders\voxelize_mean.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\voxelize_stddev.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
