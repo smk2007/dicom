@@ -37,13 +37,20 @@ public:
         m_xInMillimeters(xInMillimeters),
         m_yInMillimeters(yInMillimeters),
         m_zInMillimeters(zInMillimeters)
-    {}
+    {
+    }
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
     {
+        wchar_t pwzFileName[MAX_PATH + 1];
+        RETURN_HR_IF(E_FAIL, 0 == GetModuleFileName(NULL, pwzFileName, MAX_PATH + 1));
+        std::wstring shaderPath(pwzFileName);
+        shaderPath.erase(shaderPath.begin() + shaderPath.find_last_of(L'\\') + 1, shaderPath.end());
+        shaderPath += m_shaderPath;
+
         // Create the shader
         Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
-        RETURN_IF_FAILED(resources.CreateComputeShader(m_shaderPath.c_str(), m_shaderMain.c_str(), &spComputeShader));
+        RETURN_IF_FAILED(resources.CreateComputeShader(shaderPath.c_str(), m_shaderMain.c_str(), &spComputeShader));
 
         std::vector<std::shared_ptr<DicomFile>> metadataFiles;
         RETURN_IF_FAILED(GetMetadataFiles(m_inputFolder, &metadataFiles));
