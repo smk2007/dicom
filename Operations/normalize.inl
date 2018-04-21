@@ -94,22 +94,36 @@ public:
         Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
         RETURN_IF_FAILED(resources.CreateConstantBuffer(constantData, &spConstantBuffer));
 
-        Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBuffer;
-        RETURN_IF_FAILED(
-            resources.CreateStructuredBuffer(
+        Microsoft::WRL::ComPtr<ID3D11Buffer> spBuffer;
+        RETURN_IF_FAILED(resources.CreateStructuredBuffer(
             sizeof(float) /* size of item */,
             width * height * nChannels /* num items */,
             &data.at(0),
-            &spOutBuffer));
+            &spBuffer));
+
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spShaderResourceView;
+        RETURN_IF_FAILED(resources.CreateStructuredBufferSRV(spBuffer.Get(), &spShaderResourceView));
+
+        std::vector<ID3D11ShaderResourceView*> sharedResourceViews = { spShaderResourceView.Get() };
+
+        Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBuffer;
+        RETURN_IF_FAILED(
+            resources.CreateStructuredBuffer(
+                sizeof(unsigned short) * 4 /* size of item */,
+                width * height /* num items */,
+                nullptr,
+                &spOutBuffer));
 
         Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutUnorderedAccessView;
         RETURN_IF_FAILED(resources.CreateStructuredBufferUAV(spOutBuffer.Get(), &spOutUnorderedAccessView));
 
-        resources.RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 0, nullptr,
-            spOutUnorderedAccessView.Get(), width * height * nChannels, 1, 1);
+        resources.RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(),
+            sharedResourceViews.size(), &sharedResourceViews.at(0),
+            spOutUnorderedAccessView.Get(), width * height, 1, 1);
 
-        WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
-        RETURN_IF_FAILED(SaveToFile(resources, spOutBuffer.Get(), width, height, sizeof(float), format, m_outputFile.c_str()));
+        WICPixelFormatGUID format = GUID_WICPixelFormat64bppRGBA;
+        RETURN_IF_FAILED(SaveToFile(resources, spOutBuffer.Get(), width, height,
+            sizeof(unsigned short) * 4, format, m_outputFile.c_str()));
 
         return S_OK;
     }

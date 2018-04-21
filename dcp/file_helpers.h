@@ -191,6 +191,8 @@ inline HRESULT SaveToFile(
 
     // Set a break point here and put down the expression "p, 1024" in your watch window to see what has been written out by our CS
     // This is also a common trick to debug CS programs.
+
+    auto a = reinterpret_cast<BYTE*>(mappedResource.pData);
     Microsoft::WRL::ComPtr<IWICBitmap> spBitmap;
     RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateBitmapFromMemory(
         width,
