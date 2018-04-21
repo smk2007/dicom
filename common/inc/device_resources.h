@@ -37,7 +37,10 @@ public:
     {
         // Setup shader
         m_d3dDeviceContext->CSSetShader(pComputeShader, nullptr, 0);
-        m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, pShaderResourceViews);
+        if (nShaderResourceViews > 0)
+        {
+            m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, pShaderResourceViews);
+        }
         m_d3dDeviceContext->CSSetUnorderedAccessViews(0, 1, &pUnorderedAccessView, nullptr);
         m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &pConstantBuffer);
 
@@ -48,8 +51,11 @@ public:
         m_d3dDeviceContext->CSSetShader(nullptr, nullptr, 0);
         std::vector<ID3D11UnorderedAccessView*> uavViewNullptr(1, nullptr);
         m_d3dDeviceContext->CSSetUnorderedAccessViews(0, 1, &uavViewNullptr[0], nullptr);
-        std::vector<ID3D11ShaderResourceView*> srvNullptr(nShaderResourceViews, nullptr);
-        m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, &srvNullptr[0]);
+        if (nShaderResourceViews > 0)
+        {
+            std::vector<ID3D11ShaderResourceView*> srvNullptr(nShaderResourceViews, nullptr);
+            m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, &srvNullptr[0]);
+        }
         std::vector<ID3D11Buffer*> csBufferNullptr(1, nullptr);
         m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &csBufferNullptr[0]);
     }

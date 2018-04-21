@@ -11,7 +11,7 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--voxelize-mean 5 5 5 --input-folder "$(SolutionDir)\test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012" --output-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.png</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--normalize-image --input-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg --output-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

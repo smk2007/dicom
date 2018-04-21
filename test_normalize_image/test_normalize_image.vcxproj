@@ -108,7 +108,8 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>$(TargetDir)\dcp.exe --normalize-image --input-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.png --output-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.png</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

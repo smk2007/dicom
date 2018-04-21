@@ -202,7 +202,7 @@ inline HRESULT SaveToFile(
         &spBitmap));
 
     Microsoft::WRL::ComPtr<IWICBitmapEncoder> spEncoder;
-    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateEncoder(GUID_ContainerFormatPng, nullptr, &spEncoder));
+    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateEncoder(GUID_ContainerFormatJpeg, nullptr, &spEncoder));
 
     Microsoft::WRL::ComPtr<IWICStream> spStream;
 
@@ -226,7 +226,7 @@ inline HRESULT SaveToFile(
 
     // Copy updated bitmap to output
     RETURN_IF_FAILED(spFrameEncode->WriteSource(spBitmap.Get(), nullptr));
-
+    
     //Commit the frame
     RETURN_IF_FAILED(spFrameEncode->Commit());
     RETURN_IF_FAILED(spEncoder->Commit());

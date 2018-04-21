@@ -105,5 +105,8 @@
     <FxCompile Include="..\Shaders\voxelize_stddev.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shaders\normalize_image.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
