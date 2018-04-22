@@ -27,57 +27,11 @@ public:
         Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
         RETURN_IF_FAILED(resources.CreateComputeShader(L"Shaders\\normalize_image.hlsl", "CSMain", &spComputeShader));
 
-
-        Microsoft::WRL::ComPtr<IWICBitmapDecoder> spDecoder;
-        RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateDecoderFromFilename(
-            m_inputFile.c_str(),
-            nullptr,
-            GENERIC_READ,
-            WICDecodeMetadataCacheOnLoad,
-            &spDecoder
-        ));
-
-        Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> spDecodedFrame;
-        RETURN_IF_FAILED(spDecoder->GetFrame(0, &spDecodedFrame));
-
-        Microsoft::WRL::ComPtr<IWICFormatConverter> spConverter;
-        RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateFormatConverter(&spConverter));
-
-        RETURN_IF_FAILED(spConverter->Initialize(
-            spDecodedFrame.Get(),
-            GUID_WICPixelFormat32bppGrayFloat,
-            WICBitmapDitherTypeNone,
-            nullptr,
-            0.f,
-            WICBitmapPaletteTypeCustom));
-
-
-        unsigned width, height;
-        RETURN_IF_FAILED(spConverter->GetSize(&width, &height));
-
-        IID clsid;
-        spConverter->GetPixelFormat(&clsid);
-        Microsoft::WRL::ComPtr<IWICComponentInfo> spComponentInfo;
-        RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateComponentInfo(clsid, &spComponentInfo));
-
-        Microsoft::WRL::ComPtr<IWICPixelFormatInfo> spWICPixelFormatInfo;
-        RETURN_IF_FAILED(spComponentInfo->QueryInterface(IID_PPV_ARGS(&spWICPixelFormatInfo)));
-        
-        unsigned bpp;
-        RETURN_IF_FAILED(spWICPixelFormatInfo->GetBitsPerPixel(&bpp));
-        unsigned bytesPerPixel = bpp / 8;
-        RETURN_HR_IF_FALSE(E_FAIL, bytesPerPixel == sizeof(float));
-
+        std::vector<float> data;
+        unsigned width;
+        unsigned height;
         unsigned nChannels;
-        RETURN_IF_FAILED(spWICPixelFormatInfo->GetChannelCount(&nChannels));
-        RETURN_HR_IF_FALSE(E_FAIL, nChannels == 1);
-
-        unsigned stride = bytesPerPixel * width;
-        unsigned bufferSize = stride * height;
-        std::vector<float> data(nChannels * width * height);
-
-        RETURN_IF_FAILED(spConverter->CopyPixels(nullptr, stride, bufferSize, reinterpret_cast<unsigned char*>(&data.at(0))));
-
+        RETURN_IF_FAILED(GetStructuredBufferFromGrayscaleImage(resources, m_inputFile.c_str(), &data, &width, &height, &nChannels));
         auto min = std::min_element(std::begin(data), std::end(data));
         auto max = std::max_element(std::begin(data), std::end(data));
 

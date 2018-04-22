@@ -60,9 +60,6 @@
     <ClInclude Include="..\Operations\concatenate_images.inl">
       <Filter>Operations</Filter>
     </ClInclude>
-    <ClInclude Include="..\Operations\voxelize_operation.h">
-      <Filter>Operations</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="precomp.cpp">
@@ -106,6 +103,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\normalize_image.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\average_image.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

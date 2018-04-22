@@ -76,144 +76,144 @@ public:
             }();
         }, std::ref(metadataFiles), std::ref(fileQueue));
 
-        std::thread t2([](
-            auto resources,
-            auto spComputeShader,
-            auto fileQueue,
-            auto nFiles,
-            auto voxelWidthInMillimeters,
-            auto voxelHeightInMillimeters,
-            auto voxelDepthInMillimeters,
-            auto outputFile)
-        {
-            [&]()->HRESULT
+        std::thread t2(
+            [](auto resources,
+               auto spComputeShader,
+               auto fileQueue,
+               auto nFiles,
+               auto voxelWidthInMillimeters,
+               auto voxelHeightInMillimeters,
+               auto voxelDepthInMillimeters,
+               auto outputFile)
             {
-                Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBuffer;
-                Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBufferCounts;
-                std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs;
-                unsigned short voxelImageColumns = 0;
-                unsigned short voxelImageRows = 0;
-                unsigned short voxelImageDepth = 0;
-                unsigned slice = 0;
-
-                bool isDefunct;
-                while (SUCCEEDED(fileQueue.get().IsDefunct(&isDefunct)) && !isDefunct)
+                [&]()->HRESULT
                 {
-                    std::shared_ptr<DicomFile> file;
-                    FAIL_FAST_IF_FAILED(fileQueue.get().Dequeue(&file));
+                    Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBuffer;
+                    Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBufferCounts;
+                    std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs;
+                    unsigned short voxelImageColumns = 0;
+                    unsigned short voxelImageRows = 0;
+                    unsigned short voxelImageDepth = 0;
+                    unsigned slice = 0;
 
-                    if (!spOutBuffer || uavs.size() == 0)
+                    bool isDefunct;
+                    while (SUCCEEDED(fileQueue.get().IsDefunct(&isDefunct)) && !isDefunct)
                     {
-                        FAIL_FAST_IF_FAILED(GetVoxelDimensions(file, nFiles,
-                            voxelWidthInMillimeters, voxelHeightInMillimeters, voxelDepthInMillimeters,
-                            &voxelImageColumns, &voxelImageRows, &voxelImageDepth));
+                        std::shared_ptr<DicomFile> file;
+                        FAIL_FAST_IF_FAILED(fileQueue.get().Dequeue(&file));
 
-                        Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageColumns, voxelImageRows, voxelImageDepth);
-                        //std::vector<float> zeroOutBuffer(voxelImageColumns * voxelImageRows * voxelImageDepth, 0.f);
-                        FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
-                            sizeof(float) /* size of item */,
-                            voxelImageColumns * voxelImageRows * voxelImageDepth /* num items */,
-                            nullptr,//&zeroOutBuffer[0]/* data */,
-                            &spOutBuffer));
+                        if (!spOutBuffer || uavs.size() == 0)
+                        {
+                            FAIL_FAST_IF_FAILED(GetVoxelDimensions(file, nFiles,
+                                voxelWidthInMillimeters, voxelHeightInMillimeters, voxelDepthInMillimeters,
+                                &voxelImageColumns, &voxelImageRows, &voxelImageDepth));
 
-                        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferUnorderedAccessView;
-                        FAIL_FAST_IF_FAILED(
-                            resources.get().CreateStructuredBufferUAV(
-                                spOutBuffer.Get(),
-                                &spOutBufferUnorderedAccessView));
-
-                        //std::vector<unsigned> zeroOutBufferCount(voxelImageColumns * voxelImageRows * voxelImageDepth, 0);
-                        FAIL_FAST_IF_FAILED(
-                            resources.get().CreateStructuredBuffer(
-                                sizeof(unsigned) /* size of item */,
+                            Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageColumns, voxelImageRows, voxelImageDepth);
+                            //std::vector<float> zeroOutBuffer(voxelImageColumns * voxelImageRows * voxelImageDepth, 0.f);
+                            FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
+                                sizeof(float) /* size of item */,
                                 voxelImageColumns * voxelImageRows * voxelImageDepth /* num items */,
-                                nullptr,//&zeroOutBufferCount[0],
-                                &spOutBufferCounts));
+                                nullptr,//&zeroOutBuffer[0]/* data */,
+                                &spOutBuffer));
 
-                        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferCountsUnorderedAccessView;
-                        FAIL_FAST_IF_FAILED(
-                            resources.get().CreateStructuredBufferUAV(
-                                spOutBufferCounts.Get(),
-                                &spOutBufferCountsUnorderedAccessView));
+                            Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferUnorderedAccessView;
+                            FAIL_FAST_IF_FAILED(
+                                resources.get().CreateStructuredBufferUAV(
+                                    spOutBuffer.Get(),
+                                    &spOutBufferUnorderedAccessView));
 
-                        uavs = { spOutBufferUnorderedAccessView, spOutBufferCountsUnorderedAccessView };
+                            //std::vector<unsigned> zeroOutBufferCount(voxelImageColumns * voxelImageRows * voxelImageDepth, 0);
+                            FAIL_FAST_IF_FAILED(
+                                resources.get().CreateStructuredBuffer(
+                                    sizeof(unsigned) /* size of item */,
+                                    voxelImageColumns * voxelImageRows * voxelImageDepth /* num items */,
+                                    nullptr,//&zeroOutBufferCount[0],
+                                    &spOutBufferCounts));
 
-                        Log(L"Created resources for output buffer.");
+                            Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferCountsUnorderedAccessView;
+                            FAIL_FAST_IF_FAILED(
+                                resources.get().CreateStructuredBufferUAV(
+                                    spOutBufferCounts.Get(),
+                                    &spOutBufferCountsUnorderedAccessView));
+
+                            uavs = { spOutBufferUnorderedAccessView, spOutBufferCountsUnorderedAccessView };
+
+                            Log(L"Created resources for output buffer.");
+                        }
+
+                        Log(L"Processing: %ls", file->SafeGetFilename().c_str());
+                        Log(L"Creating constant resources.");
+
+                        struct {
+                            unsigned InputRCD[3];
+                            unsigned OutputRCD[3];
+                            float SpacingXYZ[3];
+                            float VoxelSpacingXYZ[3];
+                            unsigned Mode;
+                            unsigned UNUSED[3];
+                        } constantData =
+                        {
+                            {
+                                static_cast<unsigned>(Property<ImageProperty::Rows>::SafeGet(file)),
+                                static_cast<unsigned>(Property<ImageProperty::Columns>::SafeGet(file)),
+                                slice++
+                            },
+                            {
+                                voxelImageRows,
+                                voxelImageColumns,
+                                voxelImageDepth
+                            },
+                            {
+                                Property<ImageProperty::Spacings>::SafeGet(file)[0],
+                                Property<ImageProperty::Spacings>::SafeGet(file)[1],
+                                Property<ImageProperty::Spacings>::SafeGet(file)[2]
+                            },
+                            {
+                                static_cast<float>(voxelWidthInMillimeters),
+                                static_cast<float>(voxelHeightInMillimeters),
+                                static_cast<float>(voxelDepthInMillimeters)
+                            },
+                            0 // Normal addition
+                        };
+
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
+                        FAIL_FAST_IF_FAILED(resources.get().CreateConstantBuffer(constantData, &spConstantBuffer));
+
+                        Log(L"Created constant resources.");
+
+                        // Get data as structured buffer
+                        // Because structured buffers require a minumum size of 4 bytes per element,
+                        // 2 pixels are packed together.
+                        auto data = Property<ImageProperty::PixelData>::SafeGet(file);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> spBuffer;
+                        FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
+                            sizeof(short) * 2 /* size of item */,
+                            static_cast<unsigned>(data->size() / 4) /* num items */,
+                            &data->at(0) /* data */,
+                            &spBuffer));
+
+                        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spShaderResourceView;
+                        FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBufferSRV(spBuffer.Get(), &spShaderResourceView));
+
+                        std::vector<ID3D11ShaderResourceView*> sharedResourceViews = { spShaderResourceView.Get() };
+                        resources.get().RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 1, &sharedResourceViews[0],
+                            uavs, voxelImageColumns * voxelImageRows * voxelImageDepth, 1, 1);
                     }
 
-                    Log(L"Processing: %ls", file->SafeGetFilename().c_str());
-                    Log(L"Creating constant resources.");
-
-                    struct {
-                        unsigned InputRCD[3];
-                        unsigned OutputRCD[3];
-                        float SpacingXYZ[3];
-                        float VoxelSpacingXYZ[3];
-                        unsigned Mode;
-                        unsigned UNUSED[3];
-                    } constantData =
-                    {
-                        {
-                            static_cast<unsigned>(Property<ImageProperty::Rows>::SafeGet(file)),
-                            static_cast<unsigned>(Property<ImageProperty::Columns>::SafeGet(file)),
-                            slice++
-                        },
-                        {
+                    WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
+                    RETURN_IF_FAILED(
+                        SaveToFile(
+                            resources,
+                            spOutBuffer.Get(),
+                            voxelImageColumns * voxelImageDepth,
                             voxelImageRows,
-                            voxelImageColumns,
-                            voxelImageDepth
-                        },
-                        {
-                            Property<ImageProperty::Spacings>::SafeGet(file)[0],
-                            Property<ImageProperty::Spacings>::SafeGet(file)[1],
-                            Property<ImageProperty::Spacings>::SafeGet(file)[2]
-                        },
-                        {
-                            static_cast<float>(voxelWidthInMillimeters),
-                            static_cast<float>(voxelHeightInMillimeters),
-                            static_cast<float>(voxelDepthInMillimeters)
-                        },
-                        1 // Normal addition
-                    };
+                            sizeof(float),
+                            format,
+                            outputFile.c_str()));
 
-                    Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
-                    FAIL_FAST_IF_FAILED(resources.get().CreateConstantBuffer(constantData, &spConstantBuffer));
-
-                    Log(L"Created constant resources.");
-
-                    // Get data as structured buffer
-                    // Because structured buffers require a minumum size of 4 bytes per element,
-                    // 2 pixels are packed together.
-                    auto data = Property<ImageProperty::PixelData>::SafeGet(file);
-                    Microsoft::WRL::ComPtr<ID3D11Buffer> spBuffer;
-                    FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
-                        sizeof(short) * 2 /* size of item */,
-                        static_cast<unsigned>(data->size() / 4) /* num items */,
-                        &data->at(0) /* data */,
-                        &spBuffer));
-
-                    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spShaderResourceView;
-                    FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBufferSRV(spBuffer.Get(), &spShaderResourceView));
-
-                    std::vector<ID3D11ShaderResourceView*> sharedResourceViews = { spShaderResourceView.Get() };
-                    resources.get().RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 1, &sharedResourceViews[0],
-                        uavs, voxelImageColumns * voxelImageRows * voxelImageDepth, 1, 1);
-                }
-
-                WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
-                RETURN_IF_FAILED(
-                    SaveToFile(
-                        resources,
-                        spOutBuffer.Get(),
-                        voxelImageColumns * voxelImageDepth,
-                        voxelImageRows,
-                        sizeof(float),
-                        format,
-                        outputFile.c_str()));
-
-                return S_OK;
-            }();
-        },
+                    return S_OK;
+                }();
+            },
             std::ref(resources), spComputeShader, std::ref(fileQueue), nFiles,
             m_xInMillimeters, m_yInMillimeters, m_zInMillimeters,
             m_outputFile);
