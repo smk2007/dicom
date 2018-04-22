@@ -236,19 +236,12 @@ inline HRESULT SaveToFile(
     return S_OK;
 }
 
-template <typename T>
-HRESULT GetStructuredBufferFromGrayscaleImage(
+inline HRESULT GetWicBitmapFromFilename(
     Application::Infrastructure::DeviceResources& resources,
     const wchar_t* pwzInputFile,
-    std::vector<T>* pData,
-    unsigned* pWidth,
-    unsigned* pHeight,
-    unsigned* pChannels)
+    IWICBitmapSource** ppSource)
 {
-    RETURN_HR_IF_NULL(E_FAIL, pData);
-    RETURN_HR_IF_NULL(E_FAIL, pWidth);
-    RETURN_HR_IF_NULL(E_FAIL, pHeight);
-    RETURN_HR_IF_NULL(E_FAIL, pChannels);
+    RETURN_HR_IF_NULL(E_POINTER, ppSource);
 
     Microsoft::WRL::ComPtr<IWICBitmapDecoder> spDecoder;
     RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateDecoderFromFilename(
@@ -273,10 +266,30 @@ HRESULT GetStructuredBufferFromGrayscaleImage(
         0.f,
         WICBitmapPaletteTypeCustom));
 
-    RETURN_IF_FAILED(spConverter->GetSize(pWidth, pHeight));
+    RETURN_IF_FAILED(spConverter.CopyTo(ppSource));
+    return S_OK;
+}
+
+template <typename T>
+HRESULT GetStructuredBufferFromGrayscaleImage(
+    Application::Infrastructure::DeviceResources& resources,
+    const wchar_t* pwzInputFile,
+    std::vector<T>* pData,
+    unsigned* pWidth,
+    unsigned* pHeight,
+    unsigned* pChannels)
+{
+    RETURN_HR_IF_NULL(E_FAIL, pData);
+    RETURN_HR_IF_NULL(E_FAIL, pWidth);
+    RETURN_HR_IF_NULL(E_FAIL, pHeight);
+    RETURN_HR_IF_NULL(E_FAIL, pChannels);
+
+    Microsoft::WRL::ComPtr<IWICBitmapSource> spSource;
+    RETURN_IF_FAILED(GetWicBitmapFromFilename(resources, pwzInputFile, &spSource));
+    RETURN_IF_FAILED(spSource->GetSize(pWidth, pHeight));
 
     IID clsid;
-    spConverter->GetPixelFormat(&clsid);
+    spSource->GetPixelFormat(&clsid);
     Microsoft::WRL::ComPtr<IWICComponentInfo> spComponentInfo;
     RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateComponentInfo(clsid, &spComponentInfo));
 
@@ -294,7 +307,7 @@ HRESULT GetStructuredBufferFromGrayscaleImage(
     unsigned stride = bytesPerPixel * (*pWidth);
     unsigned bufferSize = stride * (*pHeight);
     pData->resize((*pChannels) * (*pWidth) * (*pHeight));
-    RETURN_IF_FAILED(spConverter->CopyPixels(nullptr, stride, bufferSize, reinterpret_cast<unsigned char*>(&pData->at(0))));
+    RETURN_IF_FAILED(spSource->CopyPixels(nullptr, stride, bufferSize, reinterpret_cast<unsigned char*>(&pData->at(0))));
 
     return S_OK;
 }

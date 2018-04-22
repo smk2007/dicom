@@ -113,12 +113,12 @@ private:
         auto args = CommandLineToArgvW(GetCommandLineW(), &iArgs);
 
         unsigned nArgs = static_cast<unsigned>(iArgs);
-        for (unsigned i = 1; i < nArgs; i++)
+        for (unsigned i = 0; i < nArgs; i++)
         {
             wprintf(L"%ls ", args[i]);
         }
 
-        wprintf(L"\n");
+        wprintf(L"\n\n");
 
         nArgs = static_cast<unsigned>(iArgs);
         for (unsigned i = 1; i < nArgs;)
