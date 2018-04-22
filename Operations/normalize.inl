@@ -114,12 +114,13 @@ public:
                 nullptr,
                 &spOutBuffer));
 
-        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutUnorderedAccessView;
-        RETURN_IF_FAILED(resources.CreateStructuredBufferUAV(spOutBuffer.Get(), &spOutUnorderedAccessView));
+        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferUnorderedAccessView;
+        RETURN_IF_FAILED(resources.CreateStructuredBufferUAV(spOutBuffer.Get(), &spOutBufferUnorderedAccessView));
+
+        std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs = { spOutBufferUnorderedAccessView.Get() };
 
         resources.RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(),
-            sharedResourceViews.size(), &sharedResourceViews.at(0),
-            spOutUnorderedAccessView.Get(), width * height, 1, 1);
+            1, &sharedResourceViews.at(0), uavs, width * height, 1, 1);
 
         WICPixelFormatGUID format = GUID_WICPixelFormat64bppRGBA;
         RETURN_IF_FAILED(SaveToFile(resources, spOutBuffer.Get(), width, height,

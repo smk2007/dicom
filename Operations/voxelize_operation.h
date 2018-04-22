@@ -89,9 +89,10 @@ public:
             [&]()->HRESULT
             {
                 Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBuffer;
-                Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutUnorderedAccessView;
-                unsigned short voxelImageWidth = 0;
-                unsigned short voxelImageHeight = 0;
+                Microsoft::WRL::ComPtr<ID3D11Buffer> spOutBufferCounts;
+                std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs;
+                unsigned short voxelImageColumns = 0;
+                unsigned short voxelImageRows = 0;
                 unsigned short voxelImageDepth = 0;
                 unsigned slice = 0;
 
@@ -101,20 +102,42 @@ public:
                     std::shared_ptr<DicomFile> file;
                     FAIL_FAST_IF_FAILED(fileQueue.get().Dequeue(&file));
 
-                    if (!spOutBuffer || !spOutUnorderedAccessView)
+                    if (!spOutBuffer || uavs.size() == 0)
                     {
                         FAIL_FAST_IF_FAILED(GetVoxelDimensions(file, nFiles,
                             voxelWidthInMillimeters, voxelHeightInMillimeters, voxelDepthInMillimeters,
-                            &voxelImageWidth, &voxelImageHeight, &voxelImageDepth));
+                            &voxelImageColumns, &voxelImageRows, &voxelImageDepth));
 
-                        Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageWidth, voxelImageHeight, voxelImageDepth);
+                        Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageColumns, voxelImageRows, voxelImageDepth);
+                        //std::vector<float> zeroOutBuffer(voxelImageColumns * voxelImageRows * voxelImageDepth, 0.f);
                         FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
                             sizeof(float) /* size of item */,
-                            voxelImageWidth * voxelImageHeight * voxelImageDepth /* num items */,
-                            nullptr/* data */,
+                            voxelImageColumns * voxelImageRows * voxelImageDepth /* num items */,
+                            nullptr,//&zeroOutBuffer[0]/* data */,
                             &spOutBuffer));
 
-                        FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBufferUAV(spOutBuffer.Get(), &spOutUnorderedAccessView));
+                        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferUnorderedAccessView;
+                        FAIL_FAST_IF_FAILED(
+                            resources.get().CreateStructuredBufferUAV(
+                                spOutBuffer.Get(),
+                                &spOutBufferUnorderedAccessView));
+
+                        //std::vector<unsigned> zeroOutBufferCount(voxelImageColumns * voxelImageRows * voxelImageDepth, 0);
+                        FAIL_FAST_IF_FAILED(
+                            resources.get().CreateStructuredBuffer(
+                                sizeof(unsigned) /* size of item */,
+                                voxelImageColumns * voxelImageRows * voxelImageDepth /* num items */,
+                                nullptr,//&zeroOutBufferCount[0],
+                                &spOutBufferCounts));
+
+                        Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferCountsUnorderedAccessView;
+                        FAIL_FAST_IF_FAILED(
+                            resources.get().CreateStructuredBufferUAV(
+                                spOutBufferCounts.Get(),
+                                &spOutBufferCountsUnorderedAccessView));
+
+                        uavs = { spOutBufferUnorderedAccessView, spOutBufferCountsUnorderedAccessView };
+
                         Log(L"Created resources for output buffer.");
                     }
 
@@ -122,17 +145,35 @@ public:
                     Log(L"Creating constant resources.");
 
                     struct {
-                        float ZPosition;
-                        unsigned short Width;
-                        unsigned short Height;
-                        unsigned short Depth;
-                        float Unused;
+                        unsigned InputRCD[3];
+                        unsigned OutputRCD[3];
+                        float SpacingXYZ[3];
+                        float VoxelSpacingXYZ[3];
+                        unsigned Mode;
+                        unsigned UNUSED[3];
                     } constantData =
                     {
-                        Property<ImageProperty::Spacings>::SafeGet(file)[2] * slice++,
-                        voxelImageWidth,
-                        voxelImageHeight,
-                        voxelImageDepth
+                        {
+                            static_cast<unsigned>(Property<ImageProperty::Rows>::SafeGet(file)),
+                            static_cast<unsigned>(Property<ImageProperty::Columns>::SafeGet(file)),
+                            slice++
+                        },
+                        {
+                            voxelImageRows,
+                            voxelImageColumns,
+                            voxelImageDepth
+                        },
+                        {
+                            Property<ImageProperty::Spacings>::SafeGet(file)[0],
+                            Property<ImageProperty::Spacings>::SafeGet(file)[1],
+                            Property<ImageProperty::Spacings>::SafeGet(file)[2]
+                        },
+                        {
+                            static_cast<float>(voxelWidthInMillimeters),
+                            static_cast<float>(voxelHeightInMillimeters),
+                            static_cast<float>(voxelDepthInMillimeters)
+                        },
+                        1 // Normal addition
                     };
 
                     Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
@@ -156,7 +197,7 @@ public:
 
                     std::vector<ID3D11ShaderResourceView*> sharedResourceViews = { spShaderResourceView.Get() };
                     resources.get().RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 1, &sharedResourceViews[0],
-                        spOutUnorderedAccessView.Get(), voxelImageWidth * voxelImageHeight * voxelImageDepth, 1, 1);
+                        uavs, voxelImageColumns * voxelImageRows * voxelImageDepth, 1, 1);
                 }
 
                 WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
@@ -164,8 +205,8 @@ public:
                     SaveToFile(
                         resources,
                         spOutBuffer.Get(),
-                        voxelImageWidth * voxelImageDepth,
-                        voxelImageHeight,
+                        voxelImageColumns * voxelImageDepth,
+                        voxelImageRows,
                         sizeof(float),
                         format,
                         outputFile.c_str()));
@@ -189,12 +230,12 @@ public:
         double voxelWidthInMillimeters,
         double voxelHeightInMillimeters,
         double voxelDepthInMillimeters,
-        unsigned short* voxelImageWidth,
-        unsigned short* voxelImageHeight,
+        unsigned short* voxelImageColumns,
+        unsigned short* voxelImageRows,
         unsigned short* voxelImageDepth)
     {
-        RETURN_HR_IF_NULL(E_POINTER, voxelImageWidth);
-        RETURN_HR_IF_NULL(E_POINTER, voxelImageHeight);
+        RETURN_HR_IF_NULL(E_POINTER, voxelImageColumns);
+        RETURN_HR_IF_NULL(E_POINTER, voxelImageRows);
         RETURN_HR_IF_NULL(E_POINTER, voxelImageDepth);
 
         // Initialize the out buffer on the first frame
@@ -204,8 +245,8 @@ public:
         auto rawVoxelImageWidth = static_cast<unsigned short>(ceil(spacings[0] * columns / voxelWidthInMillimeters));
 
         // Correct the width to be a multiple of 2
-        *voxelImageWidth = (static_cast<unsigned>(rawVoxelImageWidth) % 2 == 0) ? rawVoxelImageWidth : rawVoxelImageWidth + 1;
-        *voxelImageHeight = static_cast<unsigned short>(ceil(spacings[1] * rows / voxelHeightInMillimeters));
+        *voxelImageColumns = (static_cast<unsigned>(rawVoxelImageWidth) % 2 == 0) ? rawVoxelImageWidth : rawVoxelImageWidth + 1;
+        *voxelImageRows = static_cast<unsigned short>(ceil(spacings[1] * rows / voxelHeightInMillimeters));
         *voxelImageDepth = static_cast<unsigned short>(ceil(spacings[2] * nFiles / voxelDepthInMillimeters));
 
         return S_OK;

@@ -30,7 +30,7 @@ public:
         ID3D11Buffer* pConstantBuffer,
         UINT nShaderResourceViews,
         ID3D11ShaderResourceView** pShaderResourceViews,
-        ID3D11UnorderedAccessView* pUnorderedAccessView,
+        std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs,
         UINT X,
         UINT Y,
         UINT Z)
@@ -41,7 +41,14 @@ public:
         {
             m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, pShaderResourceViews);
         }
-        m_d3dDeviceContext->CSSetUnorderedAccessViews(0, 1, &pUnorderedAccessView, nullptr);
+
+        if (uavs.size() > 0)
+        {
+            std::vector<ID3D11UnorderedAccessView*> _uavs(uavs.size());
+            std::transform(std::begin(uavs), std::end(uavs), std::begin(_uavs), [](auto uav) -> auto { return uav.Get(); });
+            m_d3dDeviceContext->CSSetUnorderedAccessViews(0, static_cast<unsigned>(_uavs.size()), &_uavs[0], nullptr);
+        }
+
         m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &pConstantBuffer);
 
         // Run
@@ -49,13 +56,17 @@ public:
 
         // Revert
         m_d3dDeviceContext->CSSetShader(nullptr, nullptr, 0);
-        std::vector<ID3D11UnorderedAccessView*> uavViewNullptr(1, nullptr);
-        m_d3dDeviceContext->CSSetUnorderedAccessViews(0, 1, &uavViewNullptr[0], nullptr);
         if (nShaderResourceViews > 0)
         {
             std::vector<ID3D11ShaderResourceView*> srvNullptr(nShaderResourceViews, nullptr);
             m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, &srvNullptr[0]);
         }
+        if (uavs.size() > 0)
+        {
+            std::vector<ID3D11UnorderedAccessView*> uavNullptr(uavs.size(), nullptr);
+            m_d3dDeviceContext->CSSetUnorderedAccessViews(0, static_cast<unsigned>(uavs.size()), &uavNullptr[0], nullptr);
+        }
+
         std::vector<ID3D11Buffer*> csBufferNullptr(1, nullptr);
         m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &csBufferNullptr[0]);
     }

@@ -43,7 +43,7 @@ void CSMain( uint3 DTid : SV_DispatchThreadID )
     float hue = (max - BufferIn[DTid.x]) / (max - min);
 
     // convert to rgb
-    float3 rgb = HSVtoRGB(float3(hue / 2 + .5, 1.f, 1.f));
+    float3 rgb = HSVtoRGB(float3((1 - hue / 2), 1.f, 1.f));
     uint r = rgb.x * USHRT_MAX;
     uint g = rgb.y * USHRT_MAX;
     uint b = rgb.z * USHRT_MAX;

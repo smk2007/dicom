@@ -1,16 +1,14 @@
 cbuffer CS_CONSTANT_BUFFER : register(b0)
 {
     float ZPosition;
-    min16uint Width;
-    min16uint Height;
-    min16uint Depth;
-    float Unused;
+    uint Width;
+    uint Height;
+    uint Depth;
 };
 
 struct InOutType
 {
-    half One;
-    half Two;
+    uint RightLeft;
     int three;
 };
 

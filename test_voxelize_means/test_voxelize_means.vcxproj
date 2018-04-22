@@ -108,7 +108,9 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>$(TargetDir)\dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)\test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012" --output-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.png</Command>
+      <Command>$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg" --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -125,7 +127,9 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>$(TargetDir)\dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)\test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012" --output-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.png</Command>
+      <Command>$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg" --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -146,7 +150,9 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>$(TargetDir)\dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)\test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012" --output-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.png</Command>
+      <Command>$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg" --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,7 +173,9 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>$(TargetDir)\dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)\test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012" --output-file test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.png</Command>
+      <Command>$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg" --output-file "$(SolutionDir)test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
