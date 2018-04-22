@@ -109,11 +109,19 @@
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST $(TargetDir)dcp_test (mkdir $(TargetDir)dcp_test)
+IF NOT EXIST $(TargetDir)dcp_test\p12 (mkdir $(TargetDir)dcp_test\p12)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw (mkdir $(TargetDir)dcp_test\p12\raw)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc (mkdir $(TargetDir)dcp_test\p12\raw\noacc)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc_avg (mkdir $(TargetDir)dcp_test\p12\raw\noacc_avg)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized (mkdir $(TargetDir)dcp_test\p12\normalized)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized\noacc (mkdir $(TargetDir)dcp_test\p12\normalized\noacc)
 cd $(TargetDir)
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"</Command>
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"
+$(TargetDir)dcp.exe --image-average         --input-folder "$(TargetDir)dcp_test\p12\raw\noacc"                                                                                  --output-file "$(TargetDir)dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -131,11 +139,19 @@ $(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_tes
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST $(TargetDir)dcp_test (mkdir $(TargetDir)dcp_test)
+IF NOT EXIST $(TargetDir)dcp_test\p12 (mkdir $(TargetDir)dcp_test\p12)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw (mkdir $(TargetDir)dcp_test\p12\raw)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc (mkdir $(TargetDir)dcp_test\p12\raw\noacc)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc_avg (mkdir $(TargetDir)dcp_test\p12\raw\noacc_avg)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized (mkdir $(TargetDir)dcp_test\p12\normalized)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized\noacc (mkdir $(TargetDir)dcp_test\p12\normalized\noacc)
 cd $(TargetDir)
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"</Command>
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"
+$(TargetDir)dcp.exe --image-average         --input-folder "$(TargetDir)dcp_test\p12\raw\noacc"                                                                                  --output-file "$(TargetDir)dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,11 +173,19 @@ $(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_tes
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST $(TargetDir)dcp_test (mkdir $(TargetDir)dcp_test)
+IF NOT EXIST $(TargetDir)dcp_test\p12 (mkdir $(TargetDir)dcp_test\p12)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw (mkdir $(TargetDir)dcp_test\p12\raw)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc (mkdir $(TargetDir)dcp_test\p12\raw\noacc)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc_avg (mkdir $(TargetDir)dcp_test\p12\raw\noacc_avg)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized (mkdir $(TargetDir)dcp_test\p12\normalized)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized\noacc (mkdir $(TargetDir)dcp_test\p12\normalized\noacc)
 cd $(TargetDir)
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"</Command>
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"
+$(TargetDir)dcp.exe --image-average         --input-folder "$(TargetDir)dcp_test\p12\raw\noacc"                                                                                  --output-file "$(TargetDir)dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -183,11 +207,19 @@ $(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_tes
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST $(TargetDir)dcp_test (mkdir $(TargetDir)dcp_test)
+IF NOT EXIST $(TargetDir)dcp_test\p12 (mkdir $(TargetDir)dcp_test\p12)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw (mkdir $(TargetDir)dcp_test\p12\raw)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc (mkdir $(TargetDir)dcp_test\p12\raw\noacc)
+IF NOT EXIST $(TargetDir)dcp_test\p12\raw\noacc_avg (mkdir $(TargetDir)dcp_test\p12\raw\noacc_avg)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized (mkdir $(TargetDir)dcp_test\p12\normalized)
+IF NOT EXIST $(TargetDir)dcp_test\p12\normalized\noacc (mkdir $(TargetDir)dcp_test\p12\normalized\noacc)
 cd $(TargetDir)
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
-$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                      --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
-$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"             --output-file "$(TargetDir)dcp_test\test.3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"</Command>
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg"
+$(TargetDir)dcp.exe --voxelize-mean 5 5 5 --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013"                                              --output-file "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"
+$(TargetDir)dcp.exe --normalize-image      --input-file     "$(TargetDir)dcp_test\p12\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.jpg"    --output-file "$(TargetDir)dcp_test\p12\normalized\noacc\3D_PD_SAG_0_5ISO_NOACC_#2_RR_0013.mean.normalized.jpg"
+$(TargetDir)dcp.exe --image-average         --input-folder "$(TargetDir)dcp_test\p12\raw\noacc"                                                                                  --output-file "$(TargetDir)dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
