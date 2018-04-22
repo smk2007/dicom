@@ -21,7 +21,39 @@ template <> struct Operation<OperationType::ImageToCsv>
     {
         UNREFERENCED_PARAMETER(resources);
 
+        std::vector<float> data;
+        unsigned width;
+        unsigned height;
+        unsigned channels;
+        RETURN_IF_FAILED(
+            GetBufferFromGrayscaleImage(
+                resources,
+                m_inputFile.c_str(),
+                &data,
+                &width,
+                &height,
+                &channels));
 
+        RETURN_HR_IF_FALSE(E_FAIL, channels == 1);
+
+        std::ofstream stream(m_outputFile.c_str(), std::ios_base::out | std::ios_base::trunc);
+
+        for (unsigned row = 0; row < height; row++)
+        {
+            for (unsigned column = 0; column < width; column++)
+            {
+                stream << data[row * width + column];
+                if (column == width - 1)
+                {
+                    stream << "\n";
+                }
+                else
+                {
+                    stream << ", ";
+                }
+            }
+        }
+        stream.flush();
 
         return S_OK;
     }

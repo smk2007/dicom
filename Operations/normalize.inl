@@ -31,7 +31,8 @@ public:
         unsigned width;
         unsigned height;
         unsigned nChannels;
-        RETURN_IF_FAILED(GetStructuredBufferFromGrayscaleImage(resources, m_inputFile.c_str(), &data, &width, &height, &nChannels));
+        RETURN_IF_FAILED(GetBufferFromGrayscaleImage(resources, m_inputFile.c_str(), &data, &width, &height, &nChannels));
+        RETURN_HR_IF_FALSE(E_FAIL, nChannels == 1);
         auto min = std::min_element(std::begin(data), std::end(data));
         auto max = std::max_element(std::begin(data), std::end(data));
 

@@ -48,7 +48,7 @@ template <> struct Operation<OperationType::AverageImages>
                     {
                         auto spImageData = std::make_shared<ImageData>();
                         FAIL_FAST_IF_FAILED(
-                            GetStructuredBufferFromGrayscaleImage(
+                            GetBufferFromGrayscaleImage(
                                 resources.get(),
                                 file.c_str(),
                                 &spImageData->Data,

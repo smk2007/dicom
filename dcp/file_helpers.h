@@ -271,7 +271,7 @@ inline HRESULT GetWicBitmapFromFilename(
 }
 
 template <typename T>
-HRESULT GetStructuredBufferFromGrayscaleImage(
+HRESULT GetBufferFromGrayscaleImage(
     Application::Infrastructure::DeviceResources& resources,
     const wchar_t* pwzInputFile,
     std::vector<T>* pData,
