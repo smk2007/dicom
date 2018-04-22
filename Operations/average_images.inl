@@ -46,8 +46,8 @@ template <> struct Operation<OperationType::AverageImages>
                 {
                     for (auto file : files.get())
                     {
-                        std::shared_ptr<ImageData> spImageData;
-                        RETURN_IF_FAILED(
+                        auto spImageData = std::make_shared<ImageData>();
+                        FAIL_FAST_IF_FAILED(
                             GetStructuredBufferFromGrayscaleImage(
                                 resources.get(),
                                 file.c_str(),
@@ -58,7 +58,7 @@ template <> struct Operation<OperationType::AverageImages>
                             ));
                         queue.get().Enqueue(std::move(spImageData));
                     }
-                    queue.get().Finish();
+                    RETURN_IF_FAILED(queue.get().Finish());
                     return S_OK;
                 }();
             }, std::ref(resources), std::ref(children), std::ref(fileQueue));

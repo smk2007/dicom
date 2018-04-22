@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--normalize-image --input-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg --output-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--image-average        --input-folder "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc"                                                                                 --output-file "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--normalize-image --input-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg --output-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--image-average        --input-folder "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc"                                                                                 --output-file "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--normalize-image --input-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg --output-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--image-average        --input-folder "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc"                                                                                 --output-file "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>--normalize-image --input-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg --output-file test_collateral\test.3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.normalized.jpg</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--image-average        --input-folder "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc"                                                                                 --output-file "C:\dev\dcm\x64\Debug\dcp_test\p12\raw\noacc_avg\3D_PD_SAG_0_5ISO_NOACC.mean.avg.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
