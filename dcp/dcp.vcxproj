@@ -221,6 +221,7 @@
     <ClInclude Include="..\common\inc\device_resources.h" />
     <ClInclude Include="..\common\inc\errors.h" />
     <ClInclude Include="..\Operations\average_images.inl" />
+    <ClInclude Include="..\Operations\divide_images_helper.h" />
     <ClInclude Include="..\Operations\operation.h" />
     <ClInclude Include="dicom_file.h" />
     <ClInclude Include="dicom_image_helper.h" />
