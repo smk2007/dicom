@@ -28,6 +28,17 @@ template <> struct Operation<OperationType::SignalToNoise>
         Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
         RETURN_IF_FAILED(resources.CreateComputeShader(L"Shaders\\divide_images.hlsl", "CSMain", &spComputeShader));
 
+        struct {
+            float Factor;
+            unsigned UNUSED[3];
+        } constantData =
+        {
+            1.0f
+        };
+
+        Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
+        RETURN_IF_FAILED(resources.CreateConstantBuffer(constantData, &spConstantBuffer));
+
         // Get signal file
         Microsoft::WRL::ComPtr<ID3D11Buffer> spSignalBuffer;
         unsigned signalWidth;
@@ -93,7 +104,7 @@ template <> struct Operation<OperationType::SignalToNoise>
 
         std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs = { spOutBufferUnorderedAccessView.Get() };
 
-        resources.RunComputeShader(spComputeShader.Get(), nullptr, 2, &sharedResourceViews.at(0), uavs, signalWidth * signalHeight, 1 , 1);
+        resources.RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 2, &sharedResourceViews.at(0), uavs, signalWidth * signalHeight, 1 , 1);
 
         // Save output to file
         WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
