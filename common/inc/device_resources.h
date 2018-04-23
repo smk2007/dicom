@@ -41,15 +41,16 @@ public:
         {
             m_d3dDeviceContext->CSSetShaderResources(0, nShaderResourceViews, pShaderResourceViews);
         }
-
         if (uavs.size() > 0)
         {
             std::vector<ID3D11UnorderedAccessView*> _uavs(uavs.size());
             std::transform(std::begin(uavs), std::end(uavs), std::begin(_uavs), [](auto uav) -> auto { return uav.Get(); });
             m_d3dDeviceContext->CSSetUnorderedAccessViews(0, static_cast<unsigned>(_uavs.size()), &_uavs[0], nullptr);
         }
-
-        m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &pConstantBuffer);
+        if (pConstantBuffer)
+        {
+            m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &pConstantBuffer);
+        }
 
         // Run
         m_d3dDeviceContext->Dispatch(X, Y, Z);
@@ -66,9 +67,11 @@ public:
             std::vector<ID3D11UnorderedAccessView*> uavNullptr(uavs.size(), nullptr);
             m_d3dDeviceContext->CSSetUnorderedAccessViews(0, static_cast<unsigned>(uavs.size()), &uavNullptr[0], nullptr);
         }
-
-        std::vector<ID3D11Buffer*> csBufferNullptr(1, nullptr);
-        m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &csBufferNullptr[0]);
+        if (pConstantBuffer)
+        {
+            std::vector<ID3D11Buffer*> csBufferNullptr(1, nullptr);
+            m_d3dDeviceContext->CSSetConstantBuffers(0, 1, &csBufferNullptr[0]);
+        }
     }
 
     HRESULT Map(ID3D11Buffer* pBuffer, D3D11_MAPPED_SUBRESOURCE* mappedResource)

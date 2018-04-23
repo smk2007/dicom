@@ -19,7 +19,6 @@ enum OperationType
     VoxelizeStdDev,
     Normalize,
     AverageImages,
-    ConcatenateImages,
     ImageToCsv,
     SignalToNoise,
     GFactor,
@@ -35,7 +34,6 @@ template <unsigned TType> struct Operation;
 #include "errors.h"
 
 #include "average_images.inl"
-#include "concatenate_images.inl"
 #include "gfactor.inl"
 #include "image_to_csv.inl"
 #include "normalize.inl"

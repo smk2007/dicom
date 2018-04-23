@@ -57,9 +57,6 @@
     <ClInclude Include="..\Operations\average_images.inl">
       <Filter>Operations</Filter>
     </ClInclude>
-    <ClInclude Include="..\Operations\concatenate_images.inl">
-      <Filter>Operations</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="precomp.cpp">
