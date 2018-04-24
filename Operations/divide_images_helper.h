@@ -106,5 +106,33 @@ inline HRESULT DivideImages(
     return S_OK;
 }
 
+inline HRESULT GetVoxelDimensions(
+    std::shared_ptr<DicomFile> spFile,
+    unsigned nFiles,
+    double voxelWidthInMillimeters,
+    double voxelHeightInMillimeters,
+    double voxelDepthInMillimeters,
+    unsigned short* voxelImageColumns,
+    unsigned short* voxelImageRows,
+    unsigned short* voxelImageDepth)
+{
+    RETURN_HR_IF_NULL(E_POINTER, voxelImageColumns);
+    RETURN_HR_IF_NULL(E_POINTER, voxelImageRows);
+    RETURN_HR_IF_NULL(E_POINTER, voxelImageDepth);
+
+    // Initialize the out buffer on the first frame
+    auto spacings = Property<ImageProperty::Spacings>::SafeGet(spFile);
+    auto columns = Property<ImageProperty::Columns>::SafeGet(spFile);
+    auto rows = Property<ImageProperty::Rows>::SafeGet(spFile);
+    auto rawVoxelImageWidth = static_cast<unsigned short>(ceil(spacings[0] * columns / voxelWidthInMillimeters));
+
+    // Correct the width to be a multiple of 2
+    *voxelImageColumns = (static_cast<unsigned>(rawVoxelImageWidth) % 2 == 0) ? rawVoxelImageWidth : rawVoxelImageWidth + 1;
+    *voxelImageRows = static_cast<unsigned short>(ceil(spacings[1] * rows / voxelHeightInMillimeters));
+    *voxelImageDepth = static_cast<unsigned short>(ceil(spacings[2] * nFiles / voxelDepthInMillimeters));
+
+    return S_OK;
+}
+
 } // Operations
 } // DCM

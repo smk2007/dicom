@@ -12,13 +12,12 @@ cbuffer CS_CONSTANT_BUFFER : register(b0)
     float VOXEL_SPACING_X;
     float VOXEL_SPACING_Y;
     float VOXEL_SPACING_Z;
-    uint MODE;
-    uint UNUSED[3];
 };
 
 StructuredBuffer<uint> BufferIn : register(t0);
-RWStructuredBuffer<float> BufferOut : register(u0);
+RWStructuredBuffer<float> BufferMeans : register(u0);
 RWStructuredBuffer<uint> BufferCountsOut : register(u1);
+RWStructuredBuffer<float> BufferMeansSquared : register(u2);
 
 uint3 GetImageForIndex(uint index)
 {
@@ -43,6 +42,7 @@ void CSMain( uint3 DTid : SV_DispatchThreadID )
     }
 
     float aggregator = 0;
+    float aggregatorSquared = 0;
     uint inputStartRow    = floor(rcd.x * VOXEL_SPACING_Y / SPACING_Y);
     uint inputEndRow      = floor((rcd.x + 1) * VOXEL_SPACING_Y / SPACING_Y);
     uint inputStartColumn = floor(rcd.y * VOXEL_SPACING_X / SPACING_X);
@@ -65,18 +65,13 @@ void CSMain( uint3 DTid : SV_DispatchThreadID )
                 value = (float)(BufferIn[bufferIndex] >> 16) / (float)0xFFFF;
             }
 
-            if (MODE == 0)
-            {
-                aggregator += value;
-            }
-            else if (MODE == 1)
-            {
-                aggregator += (value * value);
-            }
+            aggregator += value;
+            aggregatorSquared += (value * value);
         }
     }
 
     uint nCount = (inputEndRow - inputStartRow) * (inputEndColumn - inputStartColumn);
-    BufferOut[DTid.x] = ((BufferCountsOut[DTid.x] * BufferOut[DTid.x]) + aggregator) / (BufferCountsOut[DTid.x] + nCount);
+    BufferMeans[DTid.x] = ((BufferCountsOut[DTid.x] * BufferMeans[DTid.x]) + aggregator) / (BufferCountsOut[DTid.x] + nCount);
+    BufferMeansSquared[DTid.x] = ((BufferCountsOut[DTid.x] * BufferMeansSquared[DTid.x]) + aggregatorSquared) / (BufferCountsOut[DTid.x] + nCount);
     BufferCountsOut[DTid.x] += nCount;
 }

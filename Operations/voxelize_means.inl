@@ -16,21 +16,17 @@ template <> struct Operation<OperationType::VoxelizeMeans>
     std::wstring m_inputFolder;
     std::wstring m_outputFile;
 
-    bool m_isSquared;
-
     Operation(
         const std::wstring& inputFolder,
         const std::wstring& outputFile,
         unsigned xInMillimeters,
         unsigned yInMillimeters,
-        unsigned zInMillimeters,
-        bool isSquared = false) :
+        unsigned zInMillimeters) :
             m_inputFolder(inputFolder),
             m_outputFile(outputFile),
             m_xInMillimeters(xInMillimeters),
             m_yInMillimeters(yInMillimeters),
-            m_zInMillimeters(zInMillimeters),
-            m_isSquared(isSquared)
+            m_zInMillimeters(zInMillimeters)
     {}
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
@@ -77,8 +73,7 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                 auto voxelWidthInMillimeters,
                 auto voxelHeightInMillimeters,
                 auto voxelDepthInMillimeters,
-                auto outputFile,
-                auto isSquared)
+                auto outputFile)
         {
             [&]()->HRESULT
             {
@@ -103,11 +98,12 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                             &voxelImageColumns, &voxelImageRows, &voxelImageDepth));
 
                         Log(L"Creating resources for output buffer: (%d, %d, %d)", voxelImageColumns, voxelImageRows, voxelImageDepth);
-                        std::vector<float> zeroOutBuffer(voxelImageColumns * voxelImageRows * voxelImageDepth, 0.f);
+
+                        // Mean buffer
                         FAIL_FAST_IF_FAILED(resources.get().CreateStructuredBuffer(
                             sizeof(float) /* size of item */,
                             voxelImageColumns * voxelImageRows * voxelImageDepth /* num items */,
-                            &zeroOutBuffer[0]/* data */,
+                            nullptr/* data */,
                             &spOutBuffer));
 
                         Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> spOutBufferUnorderedAccessView;
@@ -116,6 +112,7 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                                 spOutBuffer.Get(),
                                 &spOutBufferUnorderedAccessView));
 
+                        // Counts
                         std::vector<unsigned> zeroOutBufferCount(voxelImageColumns * voxelImageRows * voxelImageDepth, 0);
                         FAIL_FAST_IF_FAILED(
                             resources.get().CreateStructuredBuffer(
@@ -143,8 +140,6 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                         unsigned OutputRCD[3];
                         float SpacingXYZ[3];
                         float VoxelSpacingXYZ[3];
-                        unsigned Mode;
-                        unsigned UNUSED[3];
                     } constantData =
                     {
                         {
@@ -166,8 +161,7 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                                 static_cast<float>(voxelWidthInMillimeters),
                                 static_cast<float>(voxelHeightInMillimeters),
                                 static_cast<float>(voxelDepthInMillimeters)
-                            },
-                        static_cast<unsigned>(isSquared)
+                            }
                     };
 
                     Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
@@ -210,38 +204,10 @@ template <> struct Operation<OperationType::VoxelizeMeans>
         },
             std::ref(resources), spComputeShader, std::ref(fileQueue), nFiles,
             m_xInMillimeters, m_yInMillimeters, m_zInMillimeters,
-            m_outputFile, m_isSquared);
+            m_outputFile);
 
         t1.join();
         t2.join();
-
-        return S_OK;
-    }
-
-    static HRESULT GetVoxelDimensions(
-        std::shared_ptr<DicomFile> spFile,
-        unsigned nFiles,
-        double voxelWidthInMillimeters,
-        double voxelHeightInMillimeters,
-        double voxelDepthInMillimeters,
-        unsigned short* voxelImageColumns,
-        unsigned short* voxelImageRows,
-        unsigned short* voxelImageDepth)
-    {
-        RETURN_HR_IF_NULL(E_POINTER, voxelImageColumns);
-        RETURN_HR_IF_NULL(E_POINTER, voxelImageRows);
-        RETURN_HR_IF_NULL(E_POINTER, voxelImageDepth);
-
-        // Initialize the out buffer on the first frame
-        auto spacings = Property<ImageProperty::Spacings>::SafeGet(spFile);
-        auto columns = Property<ImageProperty::Columns>::SafeGet(spFile);
-        auto rows = Property<ImageProperty::Rows>::SafeGet(spFile);
-        auto rawVoxelImageWidth = static_cast<unsigned short>(ceil(spacings[0] * columns / voxelWidthInMillimeters));
-
-        // Correct the width to be a multiple of 2
-        *voxelImageColumns = (static_cast<unsigned>(rawVoxelImageWidth) % 2 == 0) ? rawVoxelImageWidth : rawVoxelImageWidth + 1;
-        *voxelImageRows = static_cast<unsigned short>(ceil(spacings[1] * rows / voxelHeightInMillimeters));
-        *voxelImageDepth = static_cast<unsigned short>(ceil(spacings[2] * nFiles / voxelDepthInMillimeters));
 
         return S_OK;
     }

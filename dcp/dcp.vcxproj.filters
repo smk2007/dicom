@@ -99,9 +99,6 @@
     <FxCompile Include="..\Shaders\voxelize_mean.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\Shaders\voxelize_stddev.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="..\Shaders\normalize_image.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -109,6 +106,15 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\divide_images.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\sqrt_image.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\square_image.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\add_images.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

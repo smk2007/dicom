@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--image-snr "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"  "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file ""C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.snr.jpg"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--voxelize-stddev 5 5 5     --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                                    --output-file "$(TargetDir)\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.stddev.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--image-snr "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"  "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file ""C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.snr.jpg"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--voxelize-stddev 5 5 5     --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                                    --output-file "$(TargetDir)\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.stddev.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--image-snr "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"  "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file ""C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.snr.jpg"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--voxelize-stddev 5 5 5     --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                                    --output-file "$(TargetDir)\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.stddev.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>--image-snr "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"  "C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.mean.jpg"    --output-file ""C:\dev\dcm\x64\Debug\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.snr.jpg"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--voxelize-stddev 5 5 5     --input-folder "$(SolutionDir)test_collateral\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012"                                                    --output-file "$(TargetDir)\dcp_test\p12\555\raw\noacc\3D_PD_SAG_0_5ISO_NOACC_#1_RR_0012.stddev.jpg"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
