@@ -24,7 +24,13 @@ template <> struct Operation<OperationType::SignalToNoise>
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
     {
-        RETURN_IF_FAILED(DivideImages(resources, m_signalFile, m_noiseFile, m_outputFile));
+        RETURN_IF_FAILED(
+            DivideImages(
+                resources,
+                m_signalFile,
+                m_noiseFile,
+                m_outputFile,
+                static_cast<float>(1 / sqrt(2))));
         return S_OK;
     }
 };

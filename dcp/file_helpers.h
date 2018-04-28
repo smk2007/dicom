@@ -164,10 +164,13 @@ inline HRESULT SortFilesInScene(std::vector<std::shared_ptr<DicomFile>>* outFile
 template <typename... TArgs>
 HRESULT Log(const wchar_t* pMessage, TArgs&&... arguments)
 {
+#ifdef DEBUG
     RETURN_HR_IF_NULL(E_INVALIDARG, pMessage);
     wprintf(pMessage, arguments...);
     wprintf(L"\n");
+#endif // DEBUG
     return S_OK;
+
 }
 
 inline HRESULT SaveToFile(
