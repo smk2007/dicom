@@ -25,6 +25,7 @@ template <> struct Operation<OperationType::ImageToCsv>
         unsigned width;
         unsigned height;
         unsigned channels;
+
         RETURN_IF_FAILED(
             GetBufferFromGrayscaleImage(
                 resources,

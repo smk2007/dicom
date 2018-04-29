@@ -188,7 +188,6 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                         uavs, voxelImageColumns * voxelImageRows * voxelImageDepth, 1, 1);
                 }
 
-                WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
                 RETURN_IF_FAILED(
                     SaveToFile(
                         resources,
@@ -196,7 +195,6 @@ template <> struct Operation<OperationType::VoxelizeMeans>
                         voxelImageColumns * voxelImageDepth,
                         voxelImageRows,
                         sizeof(float),
-                        format,
                         outputFile.c_str()));
 
                 return S_OK;

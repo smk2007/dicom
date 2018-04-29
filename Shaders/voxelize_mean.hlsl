@@ -58,11 +58,11 @@ void CSMain( uint3 DTid : SV_DispatchThreadID )
             float value;
             if (bufferOffset == 0)
             {
-                value = (float)((BufferIn[bufferIndex] << 16) >> 16) / (float)0xFFFF;
+                value = (float)((BufferIn[bufferIndex] << 16) >> 16);
             }
             else
             {
-                value = (float)(BufferIn[bufferIndex] >> 16) / (float)0xFFFF;
+                value = (float)(BufferIn[bufferIndex] >> 16);
             }
 
             aggregator += value;

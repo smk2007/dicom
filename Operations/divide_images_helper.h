@@ -31,8 +31,8 @@ inline HRESULT DivideImages(
     {
         unsigned dividendChannels;
         std::vector<float> data;
-
         RETURN_IF_FAILED(GetBufferFromGrayscaleImage(resources, dividendFile.c_str(), &data, &dividendWidth, &dividendHeight, &dividendChannels));
+
         RETURN_HR_IF_FALSE(E_FAIL, dividendChannels == 1);
 
         // Create dividend input buffer
@@ -54,7 +54,6 @@ inline HRESULT DivideImages(
     {
         unsigned divisorChannels;
         std::vector<float> data;
-
         RETURN_IF_FAILED(GetBufferFromGrayscaleImage(resources, divisorFile.c_str(), &data, &divisorWidth, &divisorHeight, &divisorChannels));
         RETURN_HR_IF_FALSE(E_FAIL, divisorChannels == 1);
         RETURN_HR_IF_FALSE(E_FAIL, divisorHeight == dividendHeight);
@@ -92,7 +91,6 @@ inline HRESULT DivideImages(
     resources.RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 2, &sharedResourceViews.at(0), uavs, dividendWidth * dividendHeight, 1, 1);
 
     // Save output to file
-    WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
     RETURN_IF_FAILED(
         SaveToFile(
             resources,
@@ -100,7 +98,6 @@ inline HRESULT DivideImages(
             dividendWidth,
             dividendHeight,
             sizeof(float),
-            format,
             m_outputFile.c_str()));
 
     return S_OK;

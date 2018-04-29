@@ -179,6 +179,36 @@ inline HRESULT SaveToFile(
     unsigned width,
     unsigned height,
     unsigned bytesPerPixel,
+    const wchar_t* pFileName)
+{
+    RETURN_HR_IF_NULL(E_INVALIDARG, pBuffer);
+    RETURN_HR_IF_NULL(E_INVALIDARG, pFileName);
+
+    // Copy resource
+    Microsoft::WRL::ComPtr<ID3D11Buffer> spCopy;
+    RETURN_IF_FAILED(resources.GetBufferOnCPU(pBuffer, &spCopy));
+
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    RETURN_IF_FAILED(resources.Map(spCopy.Get(), &mappedResource));
+
+    auto data = reinterpret_cast<float*>(mappedResource.pData);
+    std::ofstream stream(pFileName, std::ios_base::trunc | std::ios_base::binary | std::ios_base::out);
+
+    stream.write(reinterpret_cast<const char*>(&width), sizeof(unsigned));
+    stream.write(reinterpret_cast<const char*>(&height), sizeof(unsigned));
+    stream.write(reinterpret_cast<const char*>(&bytesPerPixel), sizeof(unsigned));
+    stream.write(reinterpret_cast<const char*>(data), width * height * bytesPerPixel);
+
+    return S_OK;
+}
+
+
+inline HRESULT SaveToFile(
+    Application::Infrastructure::DeviceResources& resources,
+    ID3D11Buffer* pBuffer,
+    unsigned width,
+    unsigned height,
+    unsigned bytesPerPixel,
     WICPixelFormatGUID& format,
     const wchar_t* pFileName)
 {
@@ -195,7 +225,7 @@ inline HRESULT SaveToFile(
     // Set a break point here and put down the expression "p, 1024" in your watch window to see what has been written out by our CS
     // This is also a common trick to debug CS programs.
     Microsoft::WRL::ComPtr<IWICBitmap> spBitmap;
-    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateBitmapFromMemory(
+    auto a = (resources.GetWicImagingFactory()->CreateBitmapFromMemory(
         width,
         height,
         format,
@@ -225,7 +255,9 @@ inline HRESULT SaveToFile(
     //Initialize the encoder
     RETURN_IF_FAILED(spFrameEncode->Initialize(nullptr));
     RETURN_IF_FAILED(spFrameEncode->SetSize(width, height));
-    RETURN_IF_FAILED(spFrameEncode->SetPixelFormat(&format));
+
+    WICPixelFormatGUID pixelFormat = GUID_WICPixelFormatDontCare;
+    RETURN_IF_FAILED(spFrameEncode->SetPixelFormat(&pixelFormat));
 
     // Copy updated bitmap to output
     RETURN_IF_FAILED(spFrameEncode->WriteSource(spBitmap.Get(), nullptr));
@@ -274,6 +306,32 @@ inline HRESULT GetWicBitmapFromFilename(
 }
 
 template <typename T>
+HRESULT GetBufferFromGrayscaleDicomData(
+    Application::Infrastructure::DeviceResources& resources,
+    const wchar_t* pwzInputFile,
+    std::vector<T>* pData,
+    unsigned* pWidth,
+    unsigned* pHeight,
+    unsigned* pChannels)
+{
+    unsigned bytesPerPixel;
+    std::ifstream stream(pwzInputFile, std::ios_base::binary);
+
+    stream.read(reinterpret_cast<char*>(pWidth), sizeof(unsigned));
+    stream.read(reinterpret_cast<char*>(pHeight), sizeof(unsigned));
+    stream.read(reinterpret_cast<char*>(&bytesPerPixel), sizeof(unsigned));
+
+    RETURN_HR_IF_FALSE(E_FAIL, bytesPerPixel = sizeof(T));
+    *pChannels = 1;
+
+    unsigned stride = bytesPerPixel * (*pWidth);
+    unsigned bufferSize = stride * (*pHeight);
+    pData->resize((*pWidth) * (*pHeight));
+    stream.read(reinterpret_cast<char *>(&pData->at(0)), bufferSize);
+    return S_OK;
+}
+
+template <typename T>
 HRESULT GetBufferFromGrayscaleImage(
     Application::Infrastructure::DeviceResources& resources,
     const wchar_t* pwzInputFile,
@@ -286,6 +344,12 @@ HRESULT GetBufferFromGrayscaleImage(
     RETURN_HR_IF_NULL(E_FAIL, pWidth);
     RETURN_HR_IF_NULL(E_FAIL, pHeight);
     RETURN_HR_IF_NULL(E_FAIL, pChannels);
+
+    std::wstring fileName(pwzInputFile);
+    if (fileName.rfind(L".dd") + 3 == fileName.size())
+    {
+        return GetBufferFromGrayscaleDicomData(resources, pwzInputFile, pData, pWidth, pHeight, pChannels);
+    }
 
     Microsoft::WRL::ComPtr<IWICBitmapSource> spSource;
     RETURN_IF_FAILED(GetWicBitmapFromFilename(resources, pwzInputFile, &spSource));

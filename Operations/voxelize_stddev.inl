@@ -234,7 +234,6 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
                     resources.get().RunComputeShader(spSqrtComputeShader.Get(), nullptr, 0, nullptr,
                         outUAVs, voxelImageColumns * voxelImageRows * voxelImageDepth, 1, 1);
 
-                    WICPixelFormatGUID format = GUID_WICPixelFormat32bppGrayFloat;
                     RETURN_IF_FAILED(
                         SaveToFile(
                             resources,
@@ -242,7 +241,6 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
                             voxelImageColumns * voxelImageDepth,
                             voxelImageRows,
                             sizeof(float),
-                            format,
                             outputFile.c_str()));
         
                         return S_OK;
