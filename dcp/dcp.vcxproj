@@ -117,7 +117,8 @@
       </Message>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\</Command>
+      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\
+xcopy /Y $(SolutionDir)\Scripts\*.ps1 $(TargetDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -146,7 +147,8 @@
       </Message>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\</Command>
+      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\
+xcopy /Y $(SolutionDir)\Scripts\*.ps1 $(TargetDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -179,7 +181,8 @@
       </Message>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\</Command>
+      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\
+xcopy /Y $(SolutionDir)\Scripts\*.ps1 $(TargetDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -212,7 +215,8 @@
       </Message>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\</Command>
+      <Command>xcopy /Y $(SolutionDir)\Shaders\*.hlsl $(TargetDir)\Shaders\
+xcopy /Y $(SolutionDir)\Scripts\*.ps1 $(TargetDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
