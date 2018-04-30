@@ -22,6 +22,8 @@ if (!(Test-Path $OutputFolder -PathType Container))
     New-Item -ItemType Directory -Force -Path $OutputFolder
 }
 
+$OutputFolder = (Resolve-Path $OutputFolder).Path;
+
 if (!(Test-Path $RootFolder -PathType Container))
 {
     Write-Host "Path not found: " $DCPFolder;
