@@ -94,6 +94,15 @@
     <None Include="..\Operations\voxelize_stddev.inl">
       <Filter>Operations</Filter>
     </None>
+    <None Include="..\Operations\voxelize_covariance.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\multiply_images.inl">
+      <Filter>Operations</Filter>
+    </None>
+    <None Include="..\Operations\convert_to_float.inl">
+      <Filter>Operations</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\voxelize_mean.hlsl">
@@ -115,6 +124,15 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\add_images.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\multiply_images.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\voxelize_mean_f.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\convert_to_float.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

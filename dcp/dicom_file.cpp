@@ -11,12 +11,13 @@ HRESULT Discard(std::istream& stream)
     RETURN_HR_IF_FALSE(E_FAIL, stream.good());
     return S_OK;
 }
-
+ 
 
 template <typename T>
 HRESULT Read(std::istream& stream, _Out_ T* group)
 {
 	RETURN_HR_IF_NULL(E_FAIL, group);
+
     stream.read(reinterpret_cast<char*>(group), sizeof(T));
     RETURN_HR_IF_FALSE(E_FAIL, stream.good());
     return S_OK;
@@ -26,10 +27,9 @@ DicomFile::DicomFile(
     const std::wstring& fileName,
     const std::vector<DicomTag>& tags) :
         m_fileName(fileName),
-        m_stream(fileName, std::ifstream::binary),
 		m_tags(tags)
 {
-	Load();
+    FAIL_FAST_IF_FAILED(Load());
 }
 
 _Use_decl_annotations_
@@ -89,16 +89,22 @@ HRESULT DicomFile::IsMappedTag(const DicomTag& tag, bool* isMapped)
 #include <stack>
 HRESULT DicomFile::Load()
 {
-	RETURN_IF_FAILED(Discard<128>(m_stream));
+    std::ifstream stream(m_fileName, std::ifstream::binary);
+
+	FAIL_FAST_IF_FAILED(Discard<128>(stream));
 
 	DicomPreamble preamble;
-	RETURN_IF_FAILED(Read(m_stream, &preamble));
+	FAIL_FAST_IF_FAILED(Read(stream, &preamble));
 
+    unsigned i = 0;
 	std::stack<DWORD> remainingBytesInSequance;
-	while (!m_stream.eof())
+	while (!stream.eof())
 	{
 		DicomAttribute attribute;
-		RETURN_IF_FAILED(Read(m_stream, &attribute.Tag));
+        if (FAILED(Read(stream, &attribute.Tag)))
+        {
+            continue;
+        }
 
 		if (attribute.Tag.Group == 0xFFFE && attribute.Tag.Element == 0xE0DD || // sequence end marker
 			attribute.Tag.Group == 0xFFFE && attribute.Tag.Element == 0xE000 || // item begin marker
@@ -110,13 +116,13 @@ HRESULT DicomFile::Load()
 		}
 		else
 		{
-			RETURN_IF_FAILED(Read(m_stream, &attribute.ValueRepresentation));
+			FAIL_FAST_IF_FAILED(Read(stream, &attribute.ValueRepresentation));
 		}
 
 		DWORD ValueLength;
 		if (_strnicmp((char*)attribute.ValueRepresentation, "\0\0", 2) == 0)
 		{
-			RETURN_IF_FAILED(Read(m_stream, &ValueLength));
+			FAIL_FAST_IF_FAILED(Read(stream, &ValueLength));
 		}
 		else if (_strnicmp((char*)attribute.ValueRepresentation, "OB", 2) == 0 ||
 			_strnicmp((char*)attribute.ValueRepresentation, "OW", 2) == 0 ||
@@ -125,13 +131,13 @@ HRESULT DicomFile::Load()
 			_strnicmp((char*)attribute.ValueRepresentation, "UT", 2) == 0 ||
 			_strnicmp((char*)attribute.ValueRepresentation, "UN", 2) == 0)
 		{
-			Discard<2>(m_stream);
-			RETURN_IF_FAILED(Read(m_stream, &ValueLength));
+			Discard<2>(stream);
+			FAIL_FAST_IF_FAILED(Read(stream, &ValueLength));
 		}
 		else
 		{
 			WORD sValueLength;
-			RETURN_IF_FAILED(Read(m_stream, &sValueLength));
+			FAIL_FAST_IF_FAILED(Read(stream, &sValueLength));
 			ValueLength = sValueLength;
 		}
 
@@ -149,7 +155,7 @@ HRESULT DicomFile::Load()
 
         if (ValueLength != 0)
         {
-            m_stream.read(&buffer[0], ValueLength);
+            stream.read(&buffer[0], ValueLength);
         }
 
 		bool isMapped;

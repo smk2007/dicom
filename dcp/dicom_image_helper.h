@@ -44,7 +44,10 @@ template <ImageProperty TProperty> struct Property
     static T SafeGet(std::shared_ptr<DicomFile> file)
     {
         T value;
-        FAIL_FAST_IF_FAILED(file->GetAttribute(PropertyToTagMapper<TProperty>::Tag, &value));
+        if (FAILED(file->GetAttribute(PropertyToTagMapper<TProperty>::Tag, &value)))
+        {
+            __fastfail(0);
+        }
         return value;
     }
 };

@@ -106,7 +106,6 @@ namespace Tags
 		HRESULT TagToId(const DicomTag& tag, _Out_ unsigned* id);
 
         std::wstring m_fileName;
-		std::ifstream m_stream;
 		std::vector<DicomTag> m_tags;
 
 		std::map<unsigned, std::vector<char>> m_Attributes;

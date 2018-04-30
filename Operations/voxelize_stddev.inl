@@ -16,18 +16,21 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
     // Input/output variables
     std::wstring m_inputFolder;
     std::wstring m_outputFile;
+    std::wstring m_meansOutFile;
 
     Operation(
         const std::wstring& inputFolder,
         const std::wstring& outputFile,
         unsigned xInMillimeters,
         unsigned yInMillimeters,
-        unsigned zInMillimeters) :
+        unsigned zInMillimeters,
+        const std::wstring& meansOutFile = std::wstring()) :
         m_inputFolder(inputFolder),
         m_outputFile(outputFile),
         m_xInMillimeters(xInMillimeters),
         m_yInMillimeters(yInMillimeters),
-        m_zInMillimeters(zInMillimeters)
+        m_zInMillimeters(zInMillimeters),
+        m_meansOutFile(meansOutFile)
     {}
 
     static std::wstring GetShaderFromPath(const wchar_t* path)
@@ -58,7 +61,7 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
                     // Get the full file
                     std::shared_ptr<DicomFile> fullFile;
                     FAIL_FAST_IF_FAILED(MakeDicomImageFile(file->SafeGetFilename(), &fullFile));
-                     RETURN_IF_FAILED(fileQueue.get().Enqueue(std::move(fullFile)));
+                    RETURN_IF_FAILED(fileQueue.get().Enqueue(std::move(fullFile)));
                 }
 
                 fileQueue.get().Finish();
@@ -73,7 +76,8 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
                 auto voxelWidthInMillimeters,
                 auto voxelHeightInMillimeters,
                 auto voxelDepthInMillimeters,
-                auto outputFile)
+                auto outputFile,
+                auto meansOutFile)
             {
                 [&]()->HRESULT
                 {
@@ -177,6 +181,18 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
                             uavs, voxelImageColumns * voxelImageRows * voxelImageDepth, 1, 1);
                     }
 
+                    if (!meansOutFile.empty())
+                    {
+                        RETURN_IF_FAILED(
+                            SaveToFile(
+                                resources,
+                                spMeanBuffer.Get(),
+                                voxelImageColumns * voxelImageDepth,
+                                voxelImageRows,
+                                sizeof(float),
+                                meansOutFile.c_str()));
+                    }
+
                     // Square the means
                     Microsoft::WRL::ComPtr<ID3D11ComputeShader> spSquareComputeShader;
                     RETURN_IF_FAILED(resources.get().CreateComputeShader(
@@ -248,7 +264,7 @@ template <> struct Operation<OperationType::VoxelizeStdDev>
                 },
                 std::ref(resources), std::ref(fileQueue), nFiles,
                 m_xInMillimeters, m_yInMillimeters, m_zInMillimeters,
-                m_outputFile);
+                m_outputFile, m_meansOutFile);
 
         t1.join();
         t2.join();

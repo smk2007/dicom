@@ -168,7 +168,9 @@ HRESULT Log(const wchar_t* pMessage, TArgs&&... arguments)
     RETURN_HR_IF_NULL(E_INVALIDARG, pMessage);
     wprintf(pMessage, arguments...);
     wprintf(L"\n");
-#endif // DEBUG
+#else // DEBUG
+    UNREFERENCED_PARAMETER(pMessage);
+#endif
     return S_OK;
 
 }
@@ -225,7 +227,7 @@ inline HRESULT SaveToFile(
     // Set a break point here and put down the expression "p, 1024" in your watch window to see what has been written out by our CS
     // This is also a common trick to debug CS programs.
     Microsoft::WRL::ComPtr<IWICBitmap> spBitmap;
-    auto a = (resources.GetWicImagingFactory()->CreateBitmapFromMemory(
+    RETURN_IF_FAILED(resources.GetWicImagingFactory()->CreateBitmapFromMemory(
         width,
         height,
         format,
@@ -307,7 +309,6 @@ inline HRESULT GetWicBitmapFromFilename(
 
 template <typename T>
 HRESULT GetBufferFromGrayscaleDicomData(
-    Application::Infrastructure::DeviceResources& resources,
     const wchar_t* pwzInputFile,
     std::vector<T>* pData,
     unsigned* pWidth,
@@ -321,7 +322,7 @@ HRESULT GetBufferFromGrayscaleDicomData(
     stream.read(reinterpret_cast<char*>(pHeight), sizeof(unsigned));
     stream.read(reinterpret_cast<char*>(&bytesPerPixel), sizeof(unsigned));
 
-    RETURN_HR_IF_FALSE(E_FAIL, bytesPerPixel = sizeof(T));
+    RETURN_HR_IF_FALSE(E_FAIL, bytesPerPixel == sizeof(T));
     *pChannels = 1;
 
     unsigned stride = bytesPerPixel * (*pWidth);
@@ -348,7 +349,7 @@ HRESULT GetBufferFromGrayscaleImage(
     std::wstring fileName(pwzInputFile);
     if (fileName.rfind(L".dd") + 3 == fileName.size())
     {
-        return GetBufferFromGrayscaleDicomData(resources, pwzInputFile, pData, pWidth, pHeight, pChannels);
+        return GetBufferFromGrayscaleDicomData(pwzInputFile, pData, pWidth, pHeight, pChannels);
     }
 
     Microsoft::WRL::ComPtr<IWICBitmapSource> spSource;
@@ -378,5 +379,22 @@ HRESULT GetBufferFromGrayscaleImage(
 
     return S_OK;
 }
+
+inline HRESULT CreateShader(
+    Application::Infrastructure::DeviceResources& resources,
+    std::wstring shaderFile,
+    ID3D11ComputeShader** ppOutShader)
+{
+    UNREFERENCED_PARAMETER(resources);
+    wchar_t pwzFileName[MAX_PATH + 1];
+    RETURN_HR_IF(E_FAIL, 0 == GetModuleFileName(NULL, pwzFileName, MAX_PATH + 1));
+    std::wstring shaderPath(pwzFileName);
+    shaderPath.erase(shaderPath.begin() + shaderPath.find_last_of(L'\\') + 1, shaderPath.end());
+    shaderPath += shaderFile;
+
+    RETURN_IF_FAILED(resources.CreateComputeShader(shaderPath.c_str(), "CSMain", ppOutShader));
+    return S_OK;
+}
+
 
 }

@@ -15,10 +15,13 @@ namespace Operations
 
 enum OperationType
 {
+    ConvertToFloat,
     VoxelizeMeans,
     VoxelizeStdDev,
+    VoxelizeCovariance,
     Normalize,
     AverageImages,
+    MultiplyImages,
     ImageToCsv,
     SignalToNoise,
     GFactor,
@@ -33,27 +36,31 @@ template <unsigned TType> struct Operation;
 
 #include "errors.h"
 
+namespace DCM
+{
+    namespace Operations
+    {
+
+        template <unsigned TType, typename... TArgs>
+        std::shared_ptr<Operation<TType>> MakeOperation(TArgs&&... args)
+        {
+            std::shared_ptr<Operation<TType>> spOperation(new Operation<TType>(std::forward<TArgs>(args)...));
+            return spOperation;
+        }
+
+    } // Operations
+} // DCM
+
+
+#include "convert_to_float.inl"
 #include "average_images.inl"
+#include "multiply_images.inl"
 #include "gfactor.inl"
 #include "image_to_csv.inl"
 #include "normalize.inl"
 #include "signal_to_noise.inl"
-#include "ssim.inl"
 #include "voxelize_means.inl"
 #include "voxelize_stddev.inl"
+#include "voxelize_covariance.inl"
+#include "ssim.inl"
 
-
-namespace DCM
-{
-namespace Operations
-{
-
-template <unsigned TType, typename... TArgs>
-std::shared_ptr<Operation<TType>> MakeOperation(TArgs&&... args)
-{
-    std::shared_ptr<Operation<TType>> spOperation(new Operation<TType>(std::forward<TArgs>(args)...));
-    return spOperation;
-}
-
-} // Operations
-} // DCM

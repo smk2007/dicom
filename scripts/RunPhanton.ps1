@@ -41,8 +41,9 @@ Get-ChildItem -Path $RootFolder -Directory | `
             { `
                 New-Item -ItemType Directory -Force -Path "$OutputFolder\$($_.Name)\"; `
             } `
-            .\dcp.exe --voxelize-mean   $VoxelSize $VoxelSize $VoxelSize --input-folder $_.FullName --output-file "$OutputFolder\$($_.Name)\$($_.Name).mean.dd"; `
-            .\dcp.exe --voxelize-stddev $VoxelSize $VoxelSize $VoxelSize --input-folder $_.FullName --output-file "$OutputFolder\$($_.Name)\$($_.Name).stddev.dd"; `
+            $meansFile = "$OutputFolder\$($_.Name)\$($_.Name).mean.dd"; `
+            $stddevFile = "$OutputFolder\$($_.Name)\$($_.Name).stddev.dd"; `
+            .\dcp.exe --voxelize-stddev $VoxelSize $VoxelSize $VoxelSize --input-folder $_.FullName --output-file $stddevFile --output-file2 $meansFile; `
         }
 
 Get-ChildItem -Path $OutputFolder -Directory | `

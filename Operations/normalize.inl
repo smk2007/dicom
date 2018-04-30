@@ -23,10 +23,6 @@ public:
     {
         UNREFERENCED_PARAMETER(resources);
 
-        // Create the shader
-        Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
-        RETURN_IF_FAILED(resources.CreateComputeShader(L"Shaders\\normalize_image.hlsl", "CSMain", &spComputeShader));
-
         std::vector<float> data;
         unsigned width;
         unsigned height;
@@ -74,6 +70,8 @@ public:
 
         std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> uavs = { spOutBufferUnorderedAccessView.Get() };
 
+        Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
+        RETURN_IF_FAILED(CreateShader(resources, L"Shaders\\normalize_image.hlsl", &spComputeShader));
         resources.RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(),
             1, &sharedResourceViews.at(0), uavs, width * height, 1, 1);
 

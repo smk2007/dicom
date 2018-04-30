@@ -22,10 +22,6 @@ template <> struct Operation<OperationType::AverageImages>
     {
         UNREFERENCED_PARAMETER(resources);
 
-        // Create the shader
-        Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
-        RETURN_IF_FAILED(resources.CreateComputeShader(L"Shaders\\average_image.hlsl", "CSMain", &spComputeShader));
-
         struct ImageData
         {
             std::vector<float> Data;
@@ -64,7 +60,7 @@ template <> struct Operation<OperationType::AverageImages>
             }, std::ref(resources), std::ref(children), std::ref(fileQueue));
         
         std::thread t2(
-            [](auto resources, auto spComputeShader, auto queue, auto outputFile)
+            [](auto resources, auto queue, auto outputFile)
             {
                 [&]() -> HRESULT
                 {
@@ -132,6 +128,9 @@ template <> struct Operation<OperationType::AverageImages>
                         RETURN_IF_FAILED(resources.get().CreateStructuredBufferSRV(spBuffer.Get(), &spShaderResourceView));
 
                         std::vector<ID3D11ShaderResourceView*> sharedResourceViews = { spShaderResourceView.Get() };
+                        
+                        Microsoft::WRL::ComPtr<ID3D11ComputeShader> spComputeShader;
+                        RETURN_IF_FAILED(CreateShader(resources, L"Shaders\\average_image.hlsl", &spComputeShader));
                         resources.get().RunComputeShader(spComputeShader.Get(), spConstantBuffer.Get(), 1, &sharedResourceViews[0],
                             uavs, width * height, 1, 1);
                     }
@@ -146,7 +145,7 @@ template <> struct Operation<OperationType::AverageImages>
                             outputFile.c_str()));
                     return S_OK;
                 }();
-            }, std::ref(resources), spComputeShader, std::ref(fileQueue), m_outputFile);
+            }, std::ref(resources), std::ref(fileQueue), m_outputFile);
 
         t1.join();
         t2.join();
