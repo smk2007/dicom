@@ -30,8 +30,8 @@ public:
         std::shared_ptr<DicomFile> file;
         RETURN_IF_FAILED(MakeDicomImageFile(m_inputFile, &file));
 
-        m_rows = Property<ImageProperty::Rows>::SafeGet(file);
-        m_columns = Property<ImageProperty::Columns>::SafeGet(file);
+        m_rows =    static_cast<unsigned>(Property<ImageProperty::Rows>::SafeGet(file));
+        m_columns = static_cast<unsigned>(Property<ImageProperty::Columns>::SafeGet(file));
 
         // Get data as structured buffer
         // Because structured buffers require a minumum size of 4 bytes per element,

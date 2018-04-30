@@ -1,11 +1,10 @@
 param
 (
-    [string] $DCPFolder = "C:\dev\dcm\x64\Debug\",
+    [string] $DCPFolder = ".\",
 
-#    [Parameter(Mandatory=$true)]
-    [string] $OutputFolder = "C:\KneeOutput",
+    [string] $OutputFolder = "KneeOutput",
 
-#    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$true)]
     [string] $RootFolder = "C:\Users\Administrator\Downloads\cases",
 
     [uint32] $VoxelSize = 5,

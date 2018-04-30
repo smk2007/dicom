@@ -96,7 +96,6 @@ HRESULT DicomFile::Load()
 	DicomPreamble preamble;
 	FAIL_FAST_IF_FAILED(Read(stream, &preamble));
 
-    unsigned i = 0;
 	std::stack<DWORD> remainingBytesInSequance;
 	while (!stream.eof())
 	{
