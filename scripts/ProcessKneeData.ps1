@@ -147,6 +147,30 @@ $means |
         }
     };
 
+function GetRValueForTechnique
+{
+    param
+    (
+        [string] $Technique
+    )
+
+    if ($Technique -eq "_____CAIPI")
+    {
+        return 3.9;
+    }
+    if ($Technique -eq "________CS")
+    {
+        return 4.4;
+    }
+    if ($Technique -eq "____GRAPPA")
+    {
+        return 3.9;        
+    }
+
+    throw;
+}
+
+
 Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
     Where-Object Name -CNotLike "*NOACC.snr.dd" |
         ForEach-Object {
@@ -155,6 +179,9 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
             $noaccSignal = [string]::Concat("\", $noaccSignal);
             $noaccSignal = [string]::Concat($OutputFolder, $noaccSignal);
             $techniqueSignal = $_.FullName;
+
+            $rvalue = GetRValueForTechnique($_.Name.Substring(4, 10));
+
             $base = $_.Name.Substring(0, 14);
             $base = [string]::Concat("\", $base);
             $base = [string]::Concat($OutputFolder, $base);
@@ -163,13 +190,11 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
             $gfactorFileNormalized = "$base.gfactor.jpg";
             $gfactorCSV = "$base.gfactor.csv";
         
-            Write-Output "Compute GFACTOR: [Patiend $patientId] $gfactorFile : $techniqueSignal $noaccSignal";
+            Write-Output "Compute GFACTOR: [Patiend $patientId] $gfactorFile : $techniqueSignal $noaccSignal with rvalue=$rvalue";
         
             if ($Force -or !(Test-Path $gfactorFile -PathType Leaf))
             {
-                .\dcp.exe --image-gfactor $techniqueSignal $noaccSignal --output-file $gfactorFile --gfactor-rvalue 4;
-                .\dcp.exe --image-gfactor "C:\KneeOutput\002.____GRAPPA.snr.dd" C:\KneeOutput\002._____NOACC.snr.dd --output-file "C:\KneeOutput\002.____GRAPPA.gfactor.dd" --gfactor-rvalue 4;
-                
+                .\dcp.exe --image-gfactor $techniqueSignal $noaccSignal --output-file $gfactorFile --gfactor-rvalue $rvalue;
             }
             if ($Force -or !(Test-Path $gfactorFileNormalized -PathType Leaf))
             {
