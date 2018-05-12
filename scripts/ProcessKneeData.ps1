@@ -5,7 +5,7 @@ param
     [string] $OutputFolder = "KneeOutput",
 
     [Parameter(Mandatory=$true)]
-    [string] $RootFolder = "C:\Users\Administrator\Downloads\test cases",
+    [string] $RootFolder = "C:\Users\Administrator\Downloads\Fritz Research 8-26-17\Final SNR 12 cases with filter\Final SNR 12 cases with filter",
 
     [uint32] $VoxelSize = 5,
 
@@ -190,7 +190,7 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
             $gfactorFileNormalized = "$base.gfactor.jpg";
             $gfactorCSV = "$base.gfactor.csv";
         
-            Write-Output "Compute GFACTOR: [Patiend $patientId] $gfactorFile : $techniqueSignal $noaccSignal with rvalue=$rvalue";
+            Write-Output "Compute GFACTOR: [Patient $patientId] $gfactorFile : $techniqueSignal $noaccSignal with rvalue=$rvalue";
         
             if ($Force -or !(Test-Path $gfactorFile -PathType Leaf))
             {
@@ -205,5 +205,55 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
                 .\dcp.exe --image-convert-to-csv --input-file $gfactorFile --output-file $gfactorCSV;
             }
         };
+
+# Perform final averaging
+( "GRAPPA", "CAIPI", "NOACC", "CS" ) |
+    ForEach-Object {
+        $technique = $_;
+
+        $analyses = ( "snr", "gfactor" );
+        if ($_.Equals("NOACC"))
+        {
+            $analyses = ( "snr" );
+        }
+
+        # Copy the files into their own folder
+        $analyses |
+            ForEach-Object {
+                $averagesOutputFolder = "$OutputFolder\$technique\$($_)";
+                if (!(Test-Path -Path $averagesOutputFolder))
+                {
+                    New-Item -ItemType Container -Path $averagesOutputFolder;
+                }
+
+                Get-ChildItem -Path $OutputFolder -File -Filter "*$technique.$($_).dd" |
+                    ForEach-Object {
+                        Copy-Item $_.FullName $averagesOutputFolder -Force;
+                    }
+            }
+
+        # Copy the files into their own folder
+        $analyses |
+            ForEach-Object {
+                $inputFolder = "$OutputFolder\$technique\$($_)";
+                $averagesOutputFile = "$OutputFolder\$technique\$($_)\$technique.$($_).dd";
+                $averagesOutputFileNormalized = "$OutputFolder\$technique\$($_)\$technique.$($_).snr.jpg";
+                $averagesOutputFileCSV = "$OutputFolder\$technique\$($_)\$technique.$($_).snr.csv";
+
+                if ($Force -or !(Test-Path $averagesOutputFile -PathType Leaf))
+                {
+                    .\dcp.exe --image-average --input-folder $inputFolder --output-file $averagesOutputFile;
+                }
+
+                if ($Force -or !(Test-Path $averagesOutputFileNormalized -PathType Leaf))
+                {           
+                    .\dcp.exe --normalize-image --input-file $averagesOutputFile --output-file $averagesOutputFileNormalized;
+                }
+                if ($Force -or !(Test-Path $averagesOutputFileCSV -PathType Leaf))
+                {
+                    .\dcp.exe --image-convert-to-csv --input-file $averagesOutputFile --output-file $averagesOutputFileCSV;
+                }
+            }
+    }
 
 Pop-Location
