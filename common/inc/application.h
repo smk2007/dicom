@@ -78,6 +78,22 @@ protected:
         return S_OK;
     }
 
+    template <typename T>
+    HRESULT Read(const std::wstring& param, T* value)
+    {
+        std::wistringstream oss(param);
+        oss >> *value;
+        RETURN_HR_IF(E_INVALIDARG, oss.fail());
+        return S_OK;
+    }
+
+    template <>
+    HRESULT Read<std::wstring>(const std::wstring& param, std::wstring* value)
+    {
+        *value = param;
+        return S_OK;
+    }
+
     template <unsigned TPos, typename T>
     HRESULT GetOptionParameterAt(const wchar_t* optionName, T* value)
     {
@@ -87,9 +103,7 @@ protected:
         RETURN_HR_IF(E_FAIL, foundIt == m_arguments.end());
         auto params = foundIt->second;
         RETURN_HR_IF(E_INVALIDARG, TPos >= params.size());
-        std::wistringstream oss(params.at(TPos));
-        oss >> *value;
-        RETURN_HR_IF(E_INVALIDARG, oss.fail());
+        RETURN_IF_FAILED(Read(params.at(TPos), value));
         return S_OK;
     }
 
@@ -126,6 +140,11 @@ private:
                         L"The parameter is not recognized."));
                 
                 RETURN_HR_IF(E_INVALIDARG, shim().ErrorOnInvalidParameter());
+            }
+
+            if (_wcsicmp(args[i], L"--debug") == 0)
+            {
+                __debugbreak();
             }
 
             // Error if the parameter doesnt have the correct number of parameters following

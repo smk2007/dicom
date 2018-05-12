@@ -161,7 +161,7 @@ inline HRESULT SortFilesInScene(std::vector<std::shared_ptr<DicomFile>>* outFile
     return S_OK;
 }
 
-#ifdef DEBUG
+#ifdef _DEBUG
 template <typename... TArgs>
 HRESULT Log(const wchar_t* pMessage, TArgs&&... arguments)
 {

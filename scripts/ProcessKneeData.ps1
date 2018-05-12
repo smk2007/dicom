@@ -5,7 +5,7 @@ param
     [string] $OutputFolder = "KneeOutput",
 
     [Parameter(Mandatory=$true)]
-    [string] $RootFolder = "C:\Users\Administrator\Downloads\cases",
+    [string] $RootFolder = "C:\Users\Administrator\Downloads\test cases",
 
     [uint32] $VoxelSize = 5,
 
