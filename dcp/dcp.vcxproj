@@ -250,6 +250,7 @@ xcopy /Y $(SolutionDir)\Scripts\*.ps1 $(TargetDir)</Command>
   <ItemGroup>
     <None Include="..\Operations\convert_to_float.inl" />
     <None Include="..\Operations\gfactor.inl" />
+    <None Include="..\Operations\gfactor_ssim.inl" />
     <None Include="..\Operations\image_to_csv.inl" />
     <None Include="..\Operations\multiply_images.inl" />
     <None Include="..\Operations\normalize.inl" />

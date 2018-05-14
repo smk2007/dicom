@@ -206,8 +206,10 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
             }
         };
 
+$techniqueList = ( "GRAPPA", "CAIPI", "NOACC", "CS" );
+
 # Perform final averaging
-( "GRAPPA", "CAIPI", "NOACC", "CS" ) |
+$techniqueList |
     ForEach-Object {
         $technique = $_;
 
@@ -232,7 +234,6 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
                     }
             }
 
-        # Copy the files into their own folder
         $analyses |
             ForEach-Object {
                 $inputFolder = "$OutputFolder\$technique\$($_)";
@@ -254,6 +255,96 @@ Get-ChildItem -Path $OutputFolder -File -Filter *snr.dd |
                     .\dcp.exe --image-convert-to-csv --input-file $averagesOutputFile --output-file $averagesOutputFileCSV;
                 }
             }
+    };
+
+$allGFactor = @();
+( "GRAPPA", "CAIPI", "CS" ) |
+    ForEach-Object {
+        $technique1 = $_;
+        $inputFolder = "$OutputFolder\$technique1\gfactor";
+
+        Get-ChildItem -Path $inputFolder -File -Filter *gfactor.dd |
+            ForEach-Object {
+                if ($_.Name.Substring(3,1) -eq '.')
+                {
+                    $allGFactor += ,$_;
+                }
+            }   
     }
+
+$depth = $VoxelSize * 12 / 10;
+
+$allGFactor | Group-Object -Property { $_.Name.Substring(0,3) } | ForEach-Object {
+    
+    @(
+      @{ 'Technique1'=$_.Group[0]; 'Technique2'=$_.Group[1 ]} ,
+      @{ 'Technique1'=$_.Group[1]; 'Technique2'=$_.Group[2 ]} ,
+      @{ 'Technique1'=$_.Group[2]; 'Technique2'=$_.Group[0 ]}
+    ) | ForEach-Object {
+         $pair = $_;
+
+        $patientId  = $pair['Technique1'].Name.Substring(0,3);
+        $technique1 = $pair['Technique1'].Name.Substring(4,10);
+        $technique2 = $pair['Technique2'].Name.Substring(4,10);
+        $outputFileName = "$patientId.$technique1.$technique2.ssim.dd";
+        $outputFile = "$OutputFolder\$outputFileName";
+        $ssimNormalized = "$OutputFolder\$patientId.$technique1.$technique2.ssim.jpg";
+        $ssimCSV = "$OutputFolder\$patientId.$technique1.$technique2.ssim.csv";
+
+        Write-Output "GFACTOR SIIM: [Patient $patientId] $outputFileName : $($pair['Technique1'].FullName) $($pair['Technique2'].FullName)";
+        
+        if ($Force -or !(Test-Path $outputFile -PathType Leaf))
+        {
+            .\dcp.exe --gfactor-ssim 2 2 2 --input-file $pair['Technique1'].FullName --input-file2 $pair['Technique2'].FullName --output-file $outputFile --gfactor-ssim-depth $depth;
+        }
+
+        Write-Host normalize
+        if ($Force -or !(Test-Path $ssimNormalized -PathType Leaf))
+        {           
+            .\dcp.exe --normalize-image --input-file $outputFile --output-file $ssimNormalized;
+        }
+        Write-Host csv
+        if ($Force -or !(Test-Path $ssimCSV -PathType Leaf))
+        {
+            .\dcp.exe --image-convert-to-csv --input-file $outputFile --output-file $ssimCSV;
+        }
+    }
+}
+
+Get-ChildItem -Path $OutputFolder -File -Filter *ssim.dd |
+    Group-Object -Property { $_.Name.Substring(4,21) } |
+        ForEach-Object {
+            $groupName = $_.Name;
+            
+            $averagesOutputFolder = "$OutputFolder\$groupName";
+            if (!(Test-Path -Path $averagesOutputFolder))
+            {
+                New-Item -ItemType Container -Path $averagesOutputFolder;
+            }
+
+            $_.Group | ForEach-Object {
+
+                Copy-Item $_.FullName $averagesOutputFolder -Force;
+            }
+
+            $averagesOutputFile = "$averagesOutputFolder\$groupName.ssim.dd";
+            $averagesOutputFileNormalized = "$averagesOutputFolder\$groupName.ssim.jpg";
+            $averagesOutputFileCSV = "$averagesOutputFolder\$groupName.ssim.csv";
+
+            if ($Force -or !(Test-Path $averagesOutputFile -PathType Leaf))
+            {
+                .\dcp.exe --image-average --input-folder $averagesOutputFolder --output-file $averagesOutputFile;
+            }
+
+            if ($Force -or !(Test-Path $averagesOutputFileNormalized -PathType Leaf))
+            {           
+                .\dcp.exe --normalize-image --input-file $averagesOutputFile --output-file $averagesOutputFileNormalized;
+            }
+            if ($Force -or !(Test-Path $averagesOutputFileCSV -PathType Leaf))
+            {
+                .\dcp.exe --image-convert-to-csv --input-file $averagesOutputFile --output-file $averagesOutputFileCSV;
+            }
+        }
+
 
 Pop-Location

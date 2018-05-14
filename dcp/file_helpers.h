@@ -178,6 +178,22 @@ HRESULT Log(const wchar_t*, TArgs&&...)
 }
 #endif
 
+inline HRESULT SaveToFile(
+    const float* data,
+    unsigned width,
+    unsigned height,
+    unsigned bytesPerPixel,
+    const wchar_t* pFileName)
+{
+    std::ofstream stream(pFileName, std::ios_base::trunc | std::ios_base::binary | std::ios_base::out);
+
+    stream.write(reinterpret_cast<const char*>(&width), sizeof(unsigned));
+    stream.write(reinterpret_cast<const char*>(&height), sizeof(unsigned));
+    stream.write(reinterpret_cast<const char*>(&bytesPerPixel), sizeof(unsigned));
+    stream.write(reinterpret_cast<const char*>(data), width * height * bytesPerPixel);
+    return S_OK;
+}
+
 
 inline HRESULT SaveToFile(
     Application::Infrastructure::DeviceResources& resources,

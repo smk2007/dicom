@@ -25,7 +25,8 @@ enum OperationType
     ImageToCsv,
     SignalToNoise,
     GFactor,
-    SSIM
+    SSIM,
+    GFactorSSIM
 };
 
 template <unsigned TType> void LogOperation() {}
@@ -63,4 +64,5 @@ namespace DCM
 #include "voxelize_stddev.inl"
 #include "voxelize_covariance.inl"
 #include "ssim.inl"
+#include "gfactor_ssim.inl"
 

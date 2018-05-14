@@ -103,6 +103,9 @@
     <None Include="..\Operations\convert_to_float.inl">
       <Filter>Operations</Filter>
     </None>
+    <None Include="..\Operations\gfactor_ssim.inl">
+      <Filter>Operations</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\voxelize_mean.hlsl">
