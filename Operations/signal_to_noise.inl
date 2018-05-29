@@ -12,14 +12,17 @@ template <> struct Operation<OperationType::SignalToNoise>
     std::wstring m_signalFile;
     std::wstring m_noiseFile;
     std::wstring m_outputFile;
+    float m_factor;
 
     Operation(
         const std::wstring& signalFile,
         const std::wstring& noiseFile,
-        const std::wstring& outputFile) :
+        const std::wstring& outputFile,
+        float factor = 1.0f) :
         m_signalFile(signalFile),
         m_noiseFile(noiseFile),
-        m_outputFile(outputFile)
+        m_outputFile(outputFile),
+        m_factor(factor)
     {}
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
@@ -30,7 +33,7 @@ template <> struct Operation<OperationType::SignalToNoise>
                 m_signalFile,
                 m_noiseFile,
                 m_outputFile,
-                static_cast<float>(1 / sqrt(2))));
+                static_cast<float>(m_factor / sqrt(2))));
         return S_OK;
     }
 };

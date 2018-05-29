@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iomanip>
+
 namespace DCM
 {
 namespace Operations
@@ -38,12 +40,11 @@ template <> struct Operation<OperationType::ImageToCsv>
         RETURN_HR_IF_FALSE(E_FAIL, channels == 1);
 
         std::ofstream stream(m_outputFile.c_str(), std::ios_base::out | std::ios_base::trunc);
-
         for (unsigned row = 0; row < height; row++)
         {
             for (unsigned column = 0; column < width; column++)
             {
-                stream << data[row * width + column];
+                stream << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << static_cast<double>(data[row * width + column]);
                 if (column == width - 1)
                 {
                     stream << "\n";

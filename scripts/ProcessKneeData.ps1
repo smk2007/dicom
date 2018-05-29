@@ -135,7 +135,12 @@ $means |
 
         if ($Force -or !(Test-Path $snrFile -PathType Leaf))
         {
-            .\dcp.exe --image-snr $signalFile $noiseFile.FullName --output-file $snrFile;
+            $factor = 1;
+            if ($_.Name -CLike "*____CS*")
+            {
+                $factor = .9625;
+            }
+            .\dcp.exe --image-snr $signalFile $noiseFile.FullName --output-file $snrFile --image-snr-factor $factor;
         }
         if ($Force -or !(Test-Path $snrFileNormalized -PathType Leaf))
         {           
@@ -243,6 +248,7 @@ $techniqueList |
 
                 if ($Force -or !(Test-Path $averagesOutputFile -PathType Leaf))
                 {
+                    Write-Output ".\dcp.exe --image-average --input-folder $inputFolder --output-file $averagesOutputFile";
                     .\dcp.exe --image-average --input-folder $inputFolder --output-file $averagesOutputFile;
                 }
 
@@ -298,12 +304,11 @@ $allGFactor | Group-Object -Property { $_.Name.Substring(0,3) } | ForEach-Object
             .\dcp.exe --gfactor-ssim 2 2 2 --input-file $pair['Technique1'].FullName --input-file2 $pair['Technique2'].FullName --output-file $outputFile --gfactor-ssim-depth $depth;
         }
 
-        Write-Host normalize
         if ($Force -or !(Test-Path $ssimNormalized -PathType Leaf))
         {           
             .\dcp.exe --normalize-image --input-file $outputFile --output-file $ssimNormalized;
         }
-        Write-Host csv
+
         if ($Force -or !(Test-Path $ssimCSV -PathType Leaf))
         {
             .\dcp.exe --image-convert-to-csv --input-file $outputFile --output-file $ssimCSV;
