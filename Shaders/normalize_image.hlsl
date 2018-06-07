@@ -27,13 +27,19 @@ void CSMain( uint3 DTid : SV_DispatchThreadID )
     uint USHRT_MAX = 0xFFFF;
 
     // Normalize
-    float hue = (BufferIn[DTid.x] - min) / (max - min);
+    float normalizedValue = (BufferIn[DTid.x] - min) / (max - min);
 
-    float darkness = hue;
+    float darkness = normalizedValue;
     //.67 - (hue*.67);
+    float hue = (-normalizedValue * .6666 /.6) + .6666;
+
+    if (hue < 0.f)
+    {
+        hue = 0.f;
+    }
 
     // convert to rgb
-    float3 rgb = HSVtoRGB(float3((-hue*.6666/.5) + .6666, 1.f, 1.f));
+    float3 rgb = HSVtoRGB(float3(hue, 1.f, 1.f));
     uint r = rgb.x * USHRT_MAX;
     uint g = rgb.y * USHRT_MAX;
     uint b = rgb.z * USHRT_MAX;

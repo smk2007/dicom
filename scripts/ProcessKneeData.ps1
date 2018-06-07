@@ -254,7 +254,7 @@ $techniqueList |
 
                 if ($Force -or !(Test-Path $averagesOutputFileNormalized -PathType Leaf))
                 {           
-                    .\dcp.exe --normalize-image --input-file $averagesOutputFile --output-file $averagesOutputFileNormalized;
+                    .\dcp.exe --normalize-image 0.939 54.9 --input-file $averagesOutputFile --output-file $averagesOutputFileNormalized;
                 }
                 if ($Force -or !(Test-Path $averagesOutputFileCSV -PathType Leaf))
                 {
@@ -306,7 +306,7 @@ $allGFactor | Group-Object -Property { $_.Name.Substring(0,3) } | ForEach-Object
 
         if ($Force -or !(Test-Path $ssimNormalized -PathType Leaf))
         {           
-            .\dcp.exe --normalize-image --input-file $outputFile --output-file $ssimNormalized;
+            .\dcp.exe --normalize-image 0.152 2.013 --input-file $outputFile --output-file $ssimNormalized;
         }
 
         if ($Force -or !(Test-Path $ssimCSV -PathType Leaf))
@@ -343,7 +343,7 @@ Get-ChildItem -Path $OutputFolder -File -Filter *ssim.dd |
 
             if ($Force -or !(Test-Path $averagesOutputFileNormalized -PathType Leaf))
             {           
-                .\dcp.exe --normalize-image --input-file $averagesOutputFile --output-file $averagesOutputFileNormalized;
+                .\dcp.exe --normalize-image -1 1 --input-file $averagesOutputFile --output-file $averagesOutputFileNormalized;
             }
             if ($Force -or !(Test-Path $averagesOutputFileCSV -PathType Leaf))
             {

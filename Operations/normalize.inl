@@ -1,5 +1,8 @@
 #pragma once
 
+#undef max
+#undef min
+
 namespace DCM
 {
 namespace Operations
@@ -11,12 +14,28 @@ private:
     std::wstring m_inputFile;
     std::wstring m_outputFile;
 
+    float m_min;
+    float m_max;
+
 public:
     Operation(
         const std::wstring& inputFile,
         const std::wstring& outputFile) : 
             m_inputFile(inputFile),
-            m_outputFile(outputFile)
+            m_outputFile(outputFile),
+            m_min(std::numeric_limits<float>::min()),
+            m_max(std::numeric_limits<float>::min())
+    {}
+
+    Operation(
+        const std::wstring& inputFile,
+        const std::wstring& outputFile,
+        float min,
+        float max) :
+        m_inputFile(inputFile),
+        m_outputFile(outputFile),
+        m_min(min),
+        m_max(max)
     {}
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
@@ -29,8 +48,15 @@ public:
         unsigned nChannels;
         RETURN_IF_FAILED(GetBufferFromGrayscaleImage(resources, m_inputFile.c_str(), &data, &width, &height, &nChannels));
         RETURN_HR_IF_FALSE(E_FAIL, nChannels == 1);
-        auto min = std::min_element(std::begin(data), std::end(data));
-        auto max = std::max_element(std::begin(data), std::end(data));
+
+        auto min = 
+            (m_min == std::numeric_limits<float>::min()) ?
+                *std::min_element(std::begin(data), std::end(data)) : 
+                m_min;
+        auto max =
+            m_max == std::numeric_limits<float>::min() ? 
+                *std::max_element(std::begin(data), std::end(data)) :
+                m_max;
 
         struct {
             float minimum;
@@ -38,8 +64,8 @@ public:
             double unused;
         } constantData =
         {
-            *min,
-            *max
+            min,
+            max
         };
 
         Microsoft::WRL::ComPtr<ID3D11Buffer> spConstantBuffer;
