@@ -16,22 +16,9 @@ RWStructuredBuffer<InOutType> BufferOut : register(u0);
 
 float3 HSVtoRGB(float3 HSV)
 {
-    float3 RGB = 0;
-    float C = HSV.z * HSV.y;
-    float H = HSV.x * 6;
-    float X = C * (1 - abs(fmod(H, 2) - 1));
-    if (HSV.y != 0)
-    {
-        float I = floor(H);
-        if (I == 0) { RGB = float3(C, X, 0); }
-        else if (I == 1) { RGB = float3(X, C, 0); }
-        else if (I == 2) { RGB = float3(0, C, X); }
-        else if (I == 3) { RGB = float3(0, X, C); }
-        else if (I == 4) { RGB = float3(X, 0, C); }
-        else { RGB = float3(C, 0, X); }
-    }
-    float M = HSV.z - C;
-    return RGB + M;
+    float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    float3 p = abs(frac(HSV.xxx + K.xyz) * 6.0 - K.www);
+    return HSV.z * lerp(K.xxx, clamp(p - K.xxx, 0.0, 1.0), HSV.y);
 }
 
 [numthreads(1, 1, 1)]
@@ -40,10 +27,13 @@ void CSMain( uint3 DTid : SV_DispatchThreadID )
     uint USHRT_MAX = 0xFFFF;
 
     // Normalize
-    float hue = (max - BufferIn[DTid.x]) / (max - min);
+    float hue = (BufferIn[DTid.x] - min) / (max - min);
+
+    float darkness = hue;
+    //.67 - (hue*.67);
 
     // convert to rgb
-    float3 rgb = HSVtoRGB(float3((1 - hue / 2), 1.f, 1.f));
+    float3 rgb = HSVtoRGB(float3((-hue*.6666/.5) + .6666, 1.f, 1.f));
     uint r = rgb.x * USHRT_MAX;
     uint g = rgb.y * USHRT_MAX;
     uint b = rgb.z * USHRT_MAX;

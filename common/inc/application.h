@@ -129,6 +129,8 @@ private:
         unsigned nArgs = static_cast<unsigned>(iArgs);
         for (unsigned i = 1; i < nArgs;)
         {
+            wprintf(L"%s ", args[i]);
+
             unsigned nArgsToFolllow;
             if (FAILED(shim().GetLengthOfArgumentsToFollow(args[i], &nArgsToFolllow)))
             {
@@ -162,6 +164,7 @@ private:
             std::vector<std::wstring> optionParameters;
             for (unsigned j = i + 1; j < i + 1 + nArgsToFolllow; j++)
             {
+                wprintf(L"%s ", args[j]);
                 optionParameters.emplace_back(std::wstring(args[j]));
             }
 
@@ -173,6 +176,7 @@ private:
 
             i += nArgsToFolllow + 1;
         }
+        wprintf(L"\n");
         return S_OK;
     }
 

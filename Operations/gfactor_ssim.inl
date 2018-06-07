@@ -95,11 +95,10 @@ template <> struct Operation<OperationType::GFactorSSIM>
                 for (unsigned z1 = 0; z1 < zsize; z1++)
                 {
                     covariance +=
-                        xData[GetIndexForImagePos(width, depth, xindex + x1, yindex + y1, zindex + z1)] *
-                        yData[GetIndexForImagePos(width, depth, xindex + x1, yindex + y1, zindex + z1)];
+                        (xData[GetIndexForImagePos(width, depth, xindex + x1, yindex + y1, zindex + z1)] - ux) *
+                        (yData[GetIndexForImagePos(width, depth, xindex + x1, yindex + y1, zindex + z1)] - uy);
                 }
-        covariance /= ((xsize * ysize * zsize) - 1);
-        covariance -= ux * uy;
+        covariance /= ((xsize * ysize * zsize)-1);
         return covariance;
     }
 
@@ -134,7 +133,7 @@ template <> struct Operation<OperationType::GFactorSSIM>
         double k1 = .01;
         double k2 = .03;
 
-        double L = USHRT_MAX;
+        double L = 2;
 
         double c1 = k1 * k1*L*L;
         double c2 = k2 * k2*L*L;
@@ -162,7 +161,7 @@ template <> struct Operation<OperationType::GFactorSSIM>
 
                     ssimImage[GetIndexForImagePos(ssimWidth, ssimDepth, x, y, z)] =
                         ((2 * ux * uy) + c1) * (2 * xy_covariance + c2) /
-                        ((ux * ux) + (uy * uy) + c1) / (sx*sx + sy * sy + c2);
+                        (((ux * ux) + (uy * uy) + c1) * (sx*sx + sy*sy + c2));
                 }
             }
         }

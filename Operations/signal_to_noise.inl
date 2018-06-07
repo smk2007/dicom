@@ -27,6 +27,8 @@ template <> struct Operation<OperationType::SignalToNoise>
 
     HRESULT Run(Application::Infrastructure::DeviceResources& resources)
     {
+        printf("factor: %d", m_factor);
+
         RETURN_IF_FAILED(
             DivideImages(
                 resources,
